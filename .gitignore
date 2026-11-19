@@ -1,0 +1,7 @@
+/target
+/saves
+.claude/settings*
+.claude/memory/
+.claude/teams/
+.claude/tasks/
+.cargo/
