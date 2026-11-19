@@ -62,10 +62,11 @@ pub fn setup_dropped_item_assets(
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     asset_server: Res<AssetServer>,
+    settings: Res<crate::settings::GameSettings>,
 ) {
     let mesh = meshes.add(Cuboid::new(ITEM_SIZE, ITEM_SIZE, ITEM_SIZE));
 
-    let atlas_tex: Handle<Image> = asset_server.load("textures/atlas.png");
+    let atlas_tex: Handle<Image> = asset_server.load(settings.atlas_path());
     let atlas_material = materials.add(StandardMaterial {
         base_color_texture: Some(atlas_tex),
         perceptual_roughness: 1.0,

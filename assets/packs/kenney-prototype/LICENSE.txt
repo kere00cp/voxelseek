@@ -1,0 +1,13 @@
+Kenney Prototype Flat texture pack
+==================================
+
+Textures in this directory (blocks/*.png) are downscaled derivatives of
+Kenney's "Prototype Textures" pack.
+
+Source:  https://kenney.nl/assets/prototype-textures
+Mirror:  https://github.com/Calinou/kenney-prototype-textures
+License: CC0 1.0 Universal (public domain dedication)
+         https://creativecommons.org/publicdomain/zero/1.0/legalcode
+Author:  Kenney (www.kenney.nl)
+
+Attribution is not required but appreciated: "Kenney Prototype Textures (CC0)".

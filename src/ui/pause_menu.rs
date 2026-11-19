@@ -32,14 +32,16 @@ pub fn toggle_pause(
     in_menu: Res<InMainMenu>,
     furnace_open: Res<crate::inventory::furnace::FurnaceOpen>,
     dead: Res<crate::ui::death_screen::PlayerDead>,
+    console: Res<crate::harness::HarnessConsole>,
     mut cursor_q: Query<&mut CursorOptions, With<PrimaryWindow>>,
 ) {
     if !keys.just_pressed(KeyCode::Escape) {
         return;
     }
 
-    // Don't toggle pause when main menu, inventory, furnace, or death screen is open
-    if in_menu.0 || inventory_open.0 || furnace_open.0.is_some() || dead.0 {
+    // Don't toggle pause when main menu, inventory, furnace, or death screen is open,
+    // or when the DeepSeek console consumed this Escape press.
+    if in_menu.0 || inventory_open.0 || furnace_open.0.is_some() || dead.0 || console.open || console.just_closed {
         return;
     }
 

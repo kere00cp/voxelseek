@@ -97,8 +97,9 @@ pub fn toggle_inventory(
     ct_open: Res<crate::inventory::crafting::CraftingTableOpen>,
     chest_open: Res<crate::inventory::chest::ChestOpen>,
     dead: Res<crate::ui::death_screen::PlayerDead>,
+    console: Res<crate::harness::HarnessConsole>,
 ) {
-    if furnace_open.0.is_some() || ct_open.0 || chest_open.0.is_some() || dead.0 {
+    if console.open || furnace_open.0.is_some() || ct_open.0 || chest_open.0.is_some() || dead.0 {
         return;
     }
 

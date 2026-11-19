@@ -194,7 +194,11 @@ impl Default for Hunger {
     }
 }
 
-fn spawn_player(mut commands: Commands, mut spawn_point: ResMut<SpawnPoint>) {
+fn spawn_player(
+    mut commands: Commands,
+    mut spawn_point: ResMut<SpawnPoint>,
+    settings: Res<crate::settings::GameSettings>,
+) {
     let save = crate::save::persistence::load_player();
 
     let (pos, yaw, pitch, health, air, food_level, saturation) = if let Some(ref data) = save {
@@ -254,7 +258,7 @@ fn spawn_player(mut commands: Commands, mut spawn_point: ResMut<SpawnPoint>) {
             parent.spawn((
                 Camera3d::default(),
                 Projection::Perspective(PerspectiveProjection {
-                    fov: 80.0_f32.to_radians(),
+                    fov: settings.fov.to_radians(),
                     ..default()
                 }),
                 Transform::from_xyz(0.0, PLAYER_EYE_HEIGHT, 0.0),

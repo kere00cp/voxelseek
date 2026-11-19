@@ -1,117 +1,120 @@
-# MineClaude
+# VoxelSeek
 
-A Minecraft clone built entirely by **Claude Opus 4.6** using [Claude Code](https://claude.com/claude-code), Anthropic's agentic coding tool. This project is a test of Claude's ability to build a complex, multi-system game from scratch.
+An **open-source, Minecraft-inspired voxel survival game** written in Rust
+with the [Bevy](https://bevyengine.org) engine — featuring an embedded
+**DeepSeek harness** (an AI assistant that can chat *and* act in your world),
+a sandboxed **mod interface**, a graphical **launcher**, and
+**open-licensed resource packs**.
 
 ![Rust](https://img.shields.io/badge/Rust-000000?style=flat&logo=rust&logoColor=white)
 ![Bevy](https://img.shields.io/badge/Bevy_0.18-232326?style=flat&logo=bevy&logoColor=white)
+![License](https://img.shields.io/badge/License-MIT-green)
 
-![Surface landscape with trees and water](assets/screenshots/screenshot2.jpg)
-![Cave interior with skylight](assets/screenshots/screenshot1.jpg)
+> **NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH
+> MOJANG OR MICROSOFT.** "Minecraft" is a trademark of Mojang Synergies AB.
+> VoxelSeek contains no Minecraft code or assets — all textures are
+> clean-room or openly licensed (see [ATTRIBUTION.md](ATTRIBUTION.md)).
 
-## What is this?
-
-MineClaude is a voxel engine and survival game inspired by Minecraft, written in Rust using the Bevy 0.18 game engine. ~24,000 lines of Rust across 41 source files — terrain generation, caves, mining, crafting, combat, hunger, farming, mobs, and more.
-
-The only human involvement was occasional playtesting and bug reports — automated testing can verify that code compiles and unit tests pass, but games need a human in the loop to catch visual glitches, broken physics feel, and gameplay issues that no test suite can detect.
-
-## How it was built
-
-This project was built using Claude Code's **agent teams** feature — multiple Claude agents running in parallel, coordinating through a shared task list and message passing. One lead agent (never writing code itself) orchestrated the entire process, spawning and managing specialized teammate agents.
-
-The full workflow documentation is in [`.claude/WORKFLOW.md`](.claude/WORKFLOW.md), and the project conventions are in [`.claude/CLAUDE.md`](.claude/CLAUDE.md).
-
-### Agent teams
-
-Claude Code's agent teams allow a lead agent to spawn multiple sub-agents that work concurrently. Each agent runs as an independent Claude Code instance with its own context, tools, and file access. They communicate via direct messages and coordinate through a shared task board.
-
-The team structure for each development round:
-
-```
-Lead (Delegator — coordinates only, never writes code)
-  ├── Watchdog        — scans codebase for bugs, gaps, and Minecraft inaccuracies
-  ├── Implementer A   — owns specific source files (e.g. world generation)
-  ├── Implementer B   — owns different files (e.g. UI module)
-  ├── Implementer C   — owns different files (e.g. player mechanics)
-  ├── Tester          — writes tests for all changed code
-  └── Reviewer        — mandatory code review gate before changes are accepted
-```
-
-Key design decisions that made this work:
-- **Strict module ownership** — each implementer was assigned specific files and could only edit those, preventing merge conflicts between parallel agents
-- **Implementers stay alive through review** — agents aren't shut down after finishing their task; they stay idle so the reviewer can send fixes back without re-spawning and losing context
-- **Shared task board** — all agents read from the same task list, claim work, and mark completion. The lead monitors progress and redirects stuck agents
-- **Message-based coordination** — agents communicate through direct messages for cross-module API contracts (e.g. "I added a new BlockType variant, here's the signature")
-
-### The development loop
-
-```
-DETECT → PRIORITIZE → IMPLEMENT → TEST → REVIEW → VERIFY → repeat
-```
-
-1. **Watchdog agent** continuously scans the codebase for bugs, missing features, and Minecraft inaccuracies
-2. **Lead agent** prioritizes findings and decomposes them into tasks
-3. **Implementer agents** are spawned in parallel, each assigned strict module ownership
-4. **Tester agent** writes tests for all new/changed code
-5. **Reviewer agent** audits all changes — if issues are found, they're sent back to the (still-alive) implementers for fixes
-6. **Verify** the build compiles and tests pass, then loop back to step 1
-
-This ran across 12+ development rounds. The lead managed all coordination, task assignment, code review, and conflict resolution between agents.
+VoxelSeek is a fork of [MineClaude](https://github.com/snek-git/mineclaude)
+(MIT) — a voxel game built by an agent team — extended with the DeepSeek
+harness, the mod system, the launcher, and the resource-pack system.
 
 ## Features
 
-- **World generation** — Infinite terrain with plains/desert biomes, noise-based caves (cheese chambers, spaghetti tunnels, noodle passages), ores, trees, tall grass, clay, gravel
-- **Mining & building** — Block breaking with tool-appropriate speeds, block placement, correct drops (stone→cobblestone, etc.)
-- **Crafting** — 2x2 and 3x3 crafting grids, 40+ recipes
-- **Tools & weapons** — Wood/stone/iron/diamond tiers with durability, mining speed multipliers, damage values
-- **Armor** — Leather/iron/diamond sets with damage reduction
-- **Combat** — Melee attacks, knockback, hostile mobs (zombie/skeleton) with chase AI, night spawning, sunburn
-- **Hunger** — Food system with exhaustion from sprinting/jumping/mining, starvation, health regen
-- **Farming** — Hoes, seeds, wheat growth stages, bread crafting
-- **Survival mechanics** — Fall damage, void damage, drowning, death screen with respawn
-- **Mobs** — Cows, sheep, zombies, skeletons with drops (leather, wool, rotten flesh, bones)
-- **Storage** — Chests with 27-slot UI, furnace smelting, persistent saves
-- **World features** — Doors, beds (spawn point + night skip), torches with point lights, saplings that grow into trees
-- **UI** — HUD (health, hunger, armor bars), inventory management, hotbar, item tooltips, debug overlay
-- **Rendering** — Custom greedy meshing with WGSL shader, cross-billboard meshes for plants, texture atlas from ProgrammerArt
+**Game** (from upstream MineClaude)
 
-## Build & Run
+- Infinite procedurally generated terrain with biomes, caves, ores, trees
+- Mining, building, crafting (40+ recipes), tools, armor, farming, hunger
+- Hostile and passive mobs, day/night cycle, beds, chests, furnaces, doors
+- Greedy-meshed chunk rendering with a texture atlas shader
 
-Requires Rust (stable) and a system with Vulkan/Metal/DX12 support.
+**DeepSeek harness** (new)
+
+- Press **T** in-game to open the console and talk to DeepSeek
+- The assistant can *act* through a small, auditable tool set:
+  `place_block`, `break_block`, `fill`, `give_item`, `teleport`,
+  `set_time_of_day`, `get_surroundings`, `list_inventory`, …
+- Function-calling loop with up to 8 chained tool rounds per message
+- Runs against the official DeepSeek API with **your own** API key
+  (env vars `DEEPSEEK_API_KEY`, optional `DEEPSEEK_BASE_URL`, `DEEPSEEK_MODEL`)
+- Details: [docs/harness.md](docs/harness.md)
+
+**Mod interface** (new)
+
+- Sandboxed [Rhai](https://rhai.rs) scripts in `mods/<id>/main.rhai`
+- Hooks: `on_load`, `on_tick`, `on_block_placed`, `on_block_broken`, `on_command`
+- API: `set_block`, `fill`, `give`, `teleport`, `set_time`, `get_block`,
+  `player_pos`, `chat`, `log`
+- Console commands: type `/yourcommand args` in the T console
+- A bundled example mod builds a castle around you with `/castle`
+- Details: [docs/mods.md](docs/mods.md)
+
+**Launcher** (new)
+
+- Native GUI (`voxelseek-launcher`): edit settings, pick a resource pack,
+  manage mods, store the DeepSeek key, build & launch the game
+- Details: [docs/launcher.md](docs/launcher.md)
+
+**Resource packs** (new)
+
+- Three open-licensed packs included, switchable at runtime:
+  | Pack | License |
+  |---|---|
+  | `programmer-art` (default) | CC BY 4.0 |
+  | `minetest-classic` | CC BY-SA 4.0 |
+  | `kenney-prototype` | CC0 1.0 |
+- Add your own pack in `assets/packs/<id>/` — see [docs/resource-packs.md](docs/resource-packs.md)
+
+## Quick start
 
 ```bash
-# Dev build (fast compile)
-cargo run --features bevy/dynamic_linking
+# 1. Build the game and the launcher
+cargo build --release
 
-# Release build (optimized)
-cargo run --release
+# 2. (optional) Enable the DeepSeek assistant
+#    Windows (PowerShell):  $env:DEEPSEEK_API_KEY = "sk-..."
+#    Linux/macOS:           export DEEPSEEK_API_KEY=sk-...
+
+# 3. Play
+cargo run --release --package voxelseek            # the game
+cargo run --release --package voxelseek-launcher   # or via the launcher
 ```
+
+Requires a stable Rust toolchain and a GPU with Vulkan/Metal/DX12 support.
 
 ## Controls
 
 | Key | Action |
 |-----|--------|
-| WASD | Move |
-| Space | Jump |
-| Ctrl | Sprint |
-| Shift | Sneak (edge protection) |
-| Left Click | Break block / Attack |
-| Right Click | Place block / Interact |
+| WASD / Space / Ctrl / Shift | Move / jump / sprint / sneak |
+| Left / Right click | Break / place & interact |
 | E | Inventory |
-| 1-9 | Hotbar selection |
-| Scroll | Cycle hotbar |
-| Esc | Pause menu |
+| 1–9, scroll | Hotbar |
+| **T** | **DeepSeek console** |
+| Esc | Pause / close console |
 | F3 | Debug overlay |
 
-## Tech Stack
+## Repository layout
 
-- **Language:** Rust
-- **Engine:** Bevy 0.18
-- **Meshing:** Custom greedy meshing with async chunk generation
-- **Physics:** Minecraft-accurate values (gravity, drag, jump velocity)
-- **Textures:** ProgrammerArt (CC BY 4.0) packed into a 256x256 atlas at build time
-- **Caves:** 3D noise-based (cheese/spaghetti/noodle) inspired by Minecraft 1.18+
-- **AI:** State-based mob behavior with day/night cycles
+```
+src/            # game code (fork of MineClaude, MIT)
+src/harness/    # DeepSeek harness: console UI, API client, tool set
+src/mods/       # Rhai mod runtime + events + sandboxed world API
+launcher/       # voxelseek-launcher (egui)
+mods/           # mods live here (example-hello bundled)
+assets/packs/   # open-licensed resource packs (each with LICENSE.txt)
+docs/           # harness / mods / launcher / resource-pack guides
+```
 
-## License
+## Legal
 
-MIT
+- Code: **MIT** (see [LICENSE](LICENSE))
+- Textures & sounds: open licenses, per-pack details in
+  [ATTRIBUTION.md](ATTRIBUTION.md)
+- DeepSeek is a third-party service; API use is subject to DeepSeek's terms.
+  The assistant can modify your local world — review the tool list in
+  [docs/harness.md](docs/harness.md).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md).

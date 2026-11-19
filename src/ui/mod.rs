@@ -22,9 +22,10 @@ pub struct UiAtlas {
 fn setup_ui_atlas(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    settings: Res<crate::settings::GameSettings>,
     mut layouts: ResMut<Assets<TextureAtlasLayout>>,
 ) {
-    let image = asset_server.load("textures/atlas.png");
+    let image = asset_server.load(settings.atlas_path());
     let layout = layouts.add(TextureAtlasLayout::from_grid(
         UVec2::new(16, 16), 16, 16, None, None,
     ));

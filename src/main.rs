@@ -1,4 +1,5 @@
 use bevy::prelude::*;
+use bevy::window::WindowResolution;
 
 mod block;
 mod world;
@@ -9,17 +10,35 @@ mod audio;
 mod inventory;
 mod save;
 mod entity;
+mod harness;
+mod settings;
+mod mods;
 
 fn main() {
+    let game_settings = settings::GameSettings::load();
+
     App::new()
-        .add_plugins(DefaultPlugins.set(ImagePlugin {
-            default_sampler: bevy::image::ImageSamplerDescriptor {
-                mag_filter: bevy::image::ImageFilterMode::Nearest,
-                min_filter: bevy::image::ImageFilterMode::Nearest,
-                mipmap_filter: bevy::image::ImageFilterMode::Nearest,
+        .add_plugins(DefaultPlugins
+            .set(ImagePlugin {
+                default_sampler: bevy::image::ImageSamplerDescriptor {
+                    mag_filter: bevy::image::ImageFilterMode::Nearest,
+                    min_filter: bevy::image::ImageFilterMode::Nearest,
+                    mipmap_filter: bevy::image::ImageFilterMode::Nearest,
+                    ..default()
+                },
+            })
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "VoxelSeek".to_string(),
+                    resolution: WindowResolution::new(
+                        game_settings.window_width,
+                        game_settings.window_height,
+                    ),
+                    ..default()
+                }),
                 ..default()
-            },
-        }))
+            }))
+        .insert_resource(game_settings)
         .init_state::<GameState>()
         .add_plugins((
             world::WorldPlugin,
@@ -30,6 +49,8 @@ fn main() {
             inventory::InventoryPlugin,
             save::SavePlugin,
             entity::EntityPlugin,
+            harness::HarnessPlugin,
+            mods::ModsPlugin,
         ))
         .run();
 }

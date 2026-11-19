@@ -22,8 +22,9 @@ fn any_ui_open(
     furnace_open: &FurnaceOpen,
     chest_open: &ChestOpen,
     dead: &PlayerDead,
+    console: &crate::harness::HarnessConsole,
 ) -> bool {
-    in_menu.0 || pause.0 || inventory_open.0 || ct_open.0 || furnace_open.0.is_some() || chest_open.0.is_some() || dead.0
+    in_menu.0 || pause.0 || inventory_open.0 || ct_open.0 || furnace_open.0.is_some() || chest_open.0.is_some() || dead.0 || console.open
 }
 
 pub fn mouse_look(
@@ -35,10 +36,11 @@ pub fn mouse_look(
     furnace_open: Res<FurnaceOpen>,
     chest_open: Res<ChestOpen>,
     dead: Res<PlayerDead>,
+    console: Res<crate::harness::HarnessConsole>,
     mut player_q: Query<(&mut PlayerYaw, &mut PlayerPitch, &Children), With<Player>>,
     mut camera_q: Query<&mut Transform, With<Camera3d>>,
 ) {
-    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead) {
+    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead, &console) {
         return;
     }
 
@@ -71,9 +73,10 @@ pub fn player_movement(
     furnace_open: Res<FurnaceOpen>,
     chest_open: Res<ChestOpen>,
     dead: Res<PlayerDead>,
+    console: Res<crate::harness::HarnessConsole>,
     mut query: Query<(&mut super::Velocity, &PlayerYaw, &super::Hunger, &mut super::Sneaking), With<Player>>,
 ) {
-    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead) {
+    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead, &console) {
         return;
     }
 
@@ -128,10 +131,11 @@ pub fn cursor_grab(
     furnace_open: Res<FurnaceOpen>,
     chest_open: Res<ChestOpen>,
     dead: Res<PlayerDead>,
+    console: Res<crate::harness::HarnessConsole>,
     mut cursor_q: Query<&mut CursorOptions, With<PrimaryWindow>>,
 ) {
     // Don't grab cursor when any UI screen is open
-    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead) {
+    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead, &console) {
         return;
     }
 

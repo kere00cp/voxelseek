@@ -180,8 +180,12 @@ pub fn spawn_hotbar(mut commands: Commands, atlas: Res<UiAtlas>, inventory: Res<
 pub fn hotbar_input(
     keys: Res<ButtonInput<KeyCode>>,
     scroll: Res<AccumulatedMouseScroll>,
+    console: Res<crate::harness::HarnessConsole>,
     mut hotbar: ResMut<HotbarState>,
 ) {
+    if console.open {
+        return;
+    }
     let number_keys = [
         KeyCode::Digit1,
         KeyCode::Digit2,

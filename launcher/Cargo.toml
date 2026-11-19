@@ -1,0 +1,11 @@
+[package]
+name = "voxelseek-launcher"
+version = "0.1.0"
+edition = "2021"
+description = "Graphical launcher for VoxelSeek: settings, texture packs, mods, DeepSeek key, one-click start"
+license = "MIT"
+
+[dependencies]
+eframe = "0.31"
+serde = { version = "1", features = ["derive"] }
+toml = "0.8"

@@ -1,5 +1,5 @@
-use image::{GenericImageView, RgbaImage, Rgba};
-use std::path::Path;
+use image::{RgbaImage, Rgba};
+use std::path::{Path, PathBuf};
 
 const ATLAS_SIZE: u32 = 256;
 const TILE_SIZE: u32 = 16;
@@ -113,14 +113,9 @@ fn generate_crack_textures() {
     }
 }
 
-fn main() {
-    generate_crack_textures();
-
-    let out_path = Path::new("assets/textures/atlas.png");
-    let blocks_dir = Path::new("assets/textures/blocks");
-
-    std::fs::create_dir_all("assets/textures").expect("Failed to create textures directory");
-
+/// Stitch one pack's tiles into `out_path`. Tiles missing from the pack fall
+/// back to the built-in programmer-art pack so partial packs are valid.
+fn build_atlas(pack_dir: &Path, fallback_dir: &Path, out_path: &Path) {
     let mut atlas = RgbaImage::new(ATLAS_SIZE, ATLAS_SIZE);
 
     // Fill with magenta (missing texture indicator)
@@ -129,7 +124,11 @@ fn main() {
     }
 
     for &(index, filename) in TILE_SOURCES {
-        let src_path = blocks_dir.join(filename);
+        // Selected pack first, built-in pack as fallback for missing tiles.
+        let primary = pack_dir.join(filename);
+        let fallback = fallback_dir.join(filename);
+        let src_path = if primary.exists() { primary } else { fallback };
+
         if !src_path.exists() {
             eprintln!("WARNING: Missing texture {}", src_path.display());
             continue;
@@ -159,7 +158,45 @@ fn main() {
         }
     }
 
-    atlas.save(out_path).expect("Failed to save atlas.png");
+    atlas.save(out_path).unwrap_or_else(|e| {
+        panic!("Failed to save {}: {}", out_path.display(), e)
+    });
+}
+
+fn main() {
+    generate_crack_textures();
+
+    // --- Resource packs -----------------------------------------------------
+    // Every directory under assets/packs/ that contains a blocks/ folder is
+    // built into assets/packs/<name>/atlas.png. The game picks one at runtime
+    // via the `texture_pack` key in voxelseek.toml (see src/settings.rs).
+    let packs_root = PathBuf::from("assets/packs");
+    let fallback_dir = packs_root.join("programmer-art").join("blocks");
+
+    let entries: Vec<PathBuf> = std::fs::read_dir(&packs_root)
+        .expect("Failed to read assets/packs")
+        .filter_map(|e| e.ok().map(|e| e.path()))
+        .filter(|p| p.is_dir())
+        .collect();
+
+    let mut built = Vec::new();
+    for pack in &entries {
+        let blocks = pack.join("blocks");
+        if !blocks.is_dir() {
+            continue;
+        }
+        let name = pack
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        build_atlas(&blocks, &fallback_dir, &pack.join("atlas.png"));
+        built.push(name);
+        println!("cargo::rerun-if-changed={}", blocks.display());
+    }
+
+    println!(
+        "cargo::warning=built texture atlases for packs: {}",
+        built.join(", ")
+    );
     println!("cargo::rerun-if-changed=build.rs");
-    println!("cargo::rerun-if-changed=assets/textures/blocks");
 }

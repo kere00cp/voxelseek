@@ -10,8 +10,6 @@ use super::material::{AtlasTileMaterial, ChunkMaterialType};
 use super::meshing::{build_chunk_mesh, NeighborChunks};
 use super::WorldSeed;
 
-const RENDER_DISTANCE: i32 = 16;
-const DESPAWN_DISTANCE: i32 = 18;
 const MAX_LOADS_PER_FRAME: usize = 8;
 const WORLD_HEIGHT_CHUNKS: i32 = 16;
 
@@ -80,6 +78,7 @@ pub struct CropTracker {
 pub fn setup_world(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    settings: Res<crate::settings::GameSettings>,
     mut materials: ResMut<Assets<ChunkMaterialType>>,
     world_seed: Res<WorldSeed>,
 ) {
@@ -87,7 +86,7 @@ pub fn setup_world(
     set_world_seed(world_seed.0);
 
     // Shared chunk material with atlas tiling shader for greedy meshing
-    let texture: Handle<Image> = asset_server.load("textures/atlas.png");
+    let texture: Handle<Image> = asset_server.load(settings.atlas_path());
     let material = materials.add(bevy::pbr::ExtendedMaterial {
         base: StandardMaterial {
             base_color_texture: Some(texture),
@@ -111,6 +110,7 @@ pub fn update_chunk_loading(
     mut store: ResMut<ChunkDataStore>,
     mut tracker: ResMut<SaplingTracker>,
     mut crop_tracker: ResMut<CropTracker>,
+    settings: Res<crate::settings::GameSettings>,
     camera: Query<&Transform, With<Camera3d>>,
     mut commands: Commands,
 ) {
@@ -118,6 +118,8 @@ pub fn update_chunk_loading(
         return;
     };
     let cam_chunk = world_to_chunk_pos(cam_transform.translation);
+    let render_distance = settings.render_distance;
+    let despawn_distance = settings.render_distance + 2;
 
     // Despawn distant chunks
     let to_despawn: Vec<IVec3> = manager
@@ -126,7 +128,7 @@ pub fn update_chunk_loading(
         .filter(|pos| {
             let dx = (pos.x - cam_chunk.x).abs();
             let dz = (pos.z - cam_chunk.z).abs();
-            dx > DESPAWN_DISTANCE || dz > DESPAWN_DISTANCE
+            dx > despawn_distance || dz > despawn_distance
         })
         .copied()
         .collect();
@@ -150,11 +152,11 @@ pub fn update_chunk_loading(
 
     // Collect positions to load, sorted by distance (closest first)
     let mut to_load: Vec<(IVec3, i32)> = Vec::new();
-    for x in (cam_chunk.x - RENDER_DISTANCE)..=(cam_chunk.x + RENDER_DISTANCE) {
-        for z in (cam_chunk.z - RENDER_DISTANCE)..=(cam_chunk.z + RENDER_DISTANCE) {
+    for x in (cam_chunk.x - render_distance)..=(cam_chunk.x + render_distance) {
+        for z in (cam_chunk.z - render_distance)..=(cam_chunk.z + render_distance) {
             let dx = (x - cam_chunk.x).abs();
             let dz = (z - cam_chunk.z).abs();
-            if dx > RENDER_DISTANCE || dz > RENDER_DISTANCE {
+            if dx > render_distance || dz > render_distance {
                 continue;
             }
             for y in 0..WORLD_HEIGHT_CHUNKS {

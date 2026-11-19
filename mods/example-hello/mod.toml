@@ -1,0 +1,5 @@
+id = "example-hello"
+name = "Example Hello"
+version = "0.1.0"
+author = "VoxelSeek contributors"
+description = "Example mod: greets you in chat and builds a small stone castle with /castle"

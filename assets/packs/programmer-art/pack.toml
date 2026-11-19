@@ -1,0 +1,9 @@
+# Built-in default texture pack (upstream MineClaude default look).
+name = "ProgrammerArt (classic)"
+id = "programmer-art"
+version = "1.0.0"
+description = "The classic 16x16 ProgrammerArt block textures. Clean-room, open-source replacements for Minecraft-style textures."
+license = "CC-BY-4.0"
+source = "https://github.com/deathcap/ProgrammerArt"
+author = "deathcap and contributors"
+attribution = "ProgrammerArt textures by deathcap and contributors, licensed CC BY 4.0"

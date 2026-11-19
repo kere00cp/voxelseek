@@ -1,0 +1,14 @@
+Minetest Classic texture pack
+=============================
+
+Textures in this directory (blocks/*.png) are taken from the "minetest_game"
+project (default and farming mods), part of Luanti (formerly Minetest).
+
+Source:  https://github.com/luanti-org/minetest_game
+License: Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)
+         https://creativecommons.org/licenses/by-sa/4.0/legalcode
+Authors: Luanti / Minetest contributors (see the minetest_game repository
+         for the full list of authors per texture).
+
+If you redistribute these textures or derivative atlases, you must keep the
+CC BY-SA 4.0 license and this attribution.

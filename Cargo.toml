@@ -1,7 +1,13 @@
 [package]
-name = "mineclaude"
+name = "voxelseek"
 version = "0.1.0"
 edition = "2024"
+description = "Open-source Minecraft-inspired voxel sandbox in Rust (Bevy) with an embedded DeepSeek harness plugin and open-licensed resource packs"
+license = "MIT"
+
+[workspace]
+members = ["launcher"]
+resolver = "3"
 
 [dependencies]
 bevy = { version = "0.18", features = ["free_camera"] }
@@ -11,6 +17,12 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 bincode = "1"
 flate2 = "1"
+# DeepSeek harness: blocking HTTP client used on background threads only.
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+# Mod interface: sandboxed Rhai scripts in mods/<id>/main.rhai.
+rhai = { version = "1", features = ["sync"] }
+# Settings & mod metadata files.
+toml = "0.8"
 
 [build-dependencies]
 image = { version = "0.25", default-features = false, features = ["png"] }

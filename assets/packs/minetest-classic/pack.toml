@@ -1,0 +1,9 @@
+# Community texture pack: Luanti (Minetest Game) classic look.
+name = "Minetest Classic"
+id = "minetest-classic"
+version = "1.0.0"
+description = "Classic 16x16 textures from Luanti's minetest_game (default and farming mods). Tiles without a Minetest equivalent (bed, door, bedrock, crafting table) fall back to the built-in programmer-art pack at build time."
+license = "CC-BY-SA-4.0"
+source = "https://github.com/luanti-org/minetest_game"
+author = "Luanti (Minetest) contributors"
+attribution = "Minetest Game textures by the Luanti contributors, licensed CC BY-SA 4.0"

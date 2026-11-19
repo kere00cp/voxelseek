@@ -5,3 +5,15 @@
 .claude/teams/
 .claude/tasks/
 .cargo/
+
+# Build outputs
+assets/packs/*/atlas.png
+assets/textures/atlas.png
+
+# Local runtime configuration (may contain secrets)
+voxelseek.toml
+launcher.toml
+
+# User-installed mods (the bundled example mod is committed)
+mods/*
+!mods/example-hello/

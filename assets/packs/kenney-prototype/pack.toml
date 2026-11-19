@@ -1,0 +1,9 @@
+# Community texture pack: Kenney Prototype (flat) look.
+name = "Kenney Prototype Flat"
+id = "kenney-prototype"
+version = "1.0.0"
+description = "Flat-color prototype look built from Kenney's Prototype Textures (downscaled to 16x16). Only covers the core terrain tiles; everything else falls back to the built-in programmer-art pack at build time."
+license = "CC0-1.0"
+source = "https://github.com/Calinou/kenney-prototype-textures"
+author = "Kenney (kenney.nl), packaged by Calinou"
+attribution = "Kenney Prototype Textures, CC0 1.0 Universal (attribution appreciated, not required)"

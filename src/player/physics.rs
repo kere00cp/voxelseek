@@ -94,9 +94,10 @@ pub fn ground_collision(
 pub fn jump(
     input: Res<ButtonInput<KeyCode>>,
     dead: Res<crate::ui::death_screen::PlayerDead>,
+    console: Res<crate::harness::HarnessConsole>,
     mut query: Query<(&mut Velocity, &OnGround, &mut JustJumped), With<Player>>,
 ) {
-    if dead.0 {
+    if dead.0 || console.open {
         return;
     }
     for (mut vel, on_ground, mut just_jumped) in &mut query {

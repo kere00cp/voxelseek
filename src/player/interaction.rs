@@ -514,7 +514,7 @@ pub fn break_block(
     mut commands: Commands,
     mut audio: bevy::ecs::message::MessageWriter<crate::audio::BlockBreakAudio>,
     (mut furnaces, mut furnace_open, mut chest_store, mut chest_open): (ResMut<Furnaces>, ResMut<FurnaceOpen>, ResMut<ChestStore>, ResMut<ChestOpen>),
-    (mut breaking, mut pending_exhaustion, drop_assets): (ResMut<BreakingState>, ResMut<PendingExhaustion>, Res<crate::entity::dropped_item::DroppedItemAssets>),
+    (mut breaking, mut pending_exhaustion, drop_assets, mut broken_msg): (ResMut<BreakingState>, ResMut<PendingExhaustion>, Res<crate::entity::dropped_item::DroppedItemAssets>, bevy::ecs::message::MessageWriter<crate::mods::BlockBrokenMsg>),
     overlay_assets: Res<BreakOverlayAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
@@ -678,6 +678,7 @@ pub fn place_block(
     hotbar: Res<HotbarState>,
     mut commands: Commands,
     mut audio: bevy::ecs::message::MessageWriter<crate::audio::BlockPlaceAudio>,
+    mut placed_msg: bevy::ecs::message::MessageWriter<crate::mods::BlockPlacedMsg>,
     mut sapling_tracker: ResMut<crate::world::manager::SaplingTracker>,
     drop_assets: Res<crate::entity::dropped_item::DroppedItemAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -779,6 +780,7 @@ pub fn place_block(
         set_block(&mut store, place_pos, BlockType::DoorBottom);
         set_block(&mut store, top_pos, BlockType::DoorTop);
         audio.write(crate::audio::BlockPlaceAudio);
+        placed_msg.write(crate::mods::BlockPlacedMsg { pos: place_pos, block: BlockType::DoorBottom });
         mark_needs_remesh(place_pos, &manager, &mut commands);
         mark_needs_remesh(top_pos, &manager, &mut commands);
         return;
@@ -786,6 +788,7 @@ pub fn place_block(
 
     set_block(&mut store, place_pos, block_type);
     audio.write(crate::audio::BlockPlaceAudio);
+    placed_msg.write(crate::mods::BlockPlacedMsg { pos: place_pos, block: block_type });
 
     // Track placed saplings for growth
     if block_type == BlockType::OakSapling || block_type == BlockType::BirchSapling {
