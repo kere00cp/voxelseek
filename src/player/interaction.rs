@@ -576,6 +576,7 @@ pub fn break_block(
         handle_door_break(block, &hit.block_pos, &mut store, &manager, &mut commands);
 
         set_block(&mut store, hit.block_pos, BlockType::Air);
+        broken_msg.write(crate::mods::BlockBrokenMsg { pos: hit.block_pos, block });
         if can_harvest(held_item, block) {
             let drop_pos = hit.block_pos.as_vec3() + Vec3::splat(0.5);
             if let Some(drop) = block.drop_item() {
@@ -642,6 +643,7 @@ pub fn break_block(
         handle_door_break(target_block, &target_pos, &mut store, &manager, &mut commands);
 
         set_block(&mut store, target_pos, BlockType::Air);
+        broken_msg.write(crate::mods::BlockBrokenMsg { pos: target_pos, block: target_block });
         // Check tool requirements for drops
         if can_harvest(held_item, target_block) {
             let drop_pos = target_pos.as_vec3() + Vec3::splat(0.5);

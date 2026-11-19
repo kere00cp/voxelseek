@@ -9,7 +9,6 @@
 //! The launcher stores its own state in `launcher.toml` next to the game
 //! directory and writes the game's settings file `voxelseek.toml`.
 
-use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command};
 use std::sync::mpsc;

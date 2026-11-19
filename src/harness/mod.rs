@@ -27,7 +27,10 @@ pub struct HarnessPlugin;
 impl Plugin for HarnessPlugin {
     fn build(&self, app: &mut App) {
         let (tx, rx) = mpsc::channel();
-        app.insert_resource(HarnessChannel { tx, rx })
+        app.insert_resource(HarnessChannel {
+            tx,
+            rx: std::sync::Mutex::new(rx),
+        })
             .init_resource::<HarnessConsole>()
             .init_resource::<HarnessHistory>()
             .init_resource::<HarnessConfig>()
@@ -35,8 +38,7 @@ impl Plugin for HarnessPlugin {
             .add_systems(
                 Update,
                 (
-                    console::toggle_console,
-                    console::console_keyboard_input.after(console::toggle_console),
+                    (console::toggle_console, console::console_keyboard_input).chain(),
                     console::update_console_ui,
                     console::poll_network,
                 ),
@@ -78,6 +80,9 @@ pub struct HarnessConsole {
     /// Set for the remainder of the frame in which the console was closed
     /// with Escape, so the pause menu does not also trigger on that key press.
     pub just_closed: bool,
+    /// Set for the remainder of the frame in which the console was opened
+    /// with T, so the same key press is not typed into the input field.
+    pub just_opened: bool,
 }
 
 impl HarnessConsole {
@@ -146,8 +151,10 @@ impl Default for HarnessConfig {
 }
 
 /// Channel carrying results from background HTTP threads back to Bevy.
+/// The receiver is wrapped in a Mutex because `mpsc::Receiver` is not `Sync`,
+/// and Bevy resources must be `Send + Sync`.
 #[derive(Resource)]
 pub struct HarnessChannel {
     pub tx: mpsc::Sender<api::ApiOutcome>,
-    pub rx: mpsc::Receiver<api::ApiOutcome>,
+    pub rx: std::sync::Mutex<mpsc::Receiver<api::ApiOutcome>>,
 }

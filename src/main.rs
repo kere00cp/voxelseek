@@ -31,8 +31,8 @@ fn main() {
                 primary_window: Some(Window {
                     title: "VoxelSeek".to_string(),
                     resolution: WindowResolution::new(
-                        game_settings.window_width,
-                        game_settings.window_height,
+                        game_settings.window_width as u32,
+                        game_settings.window_height as u32,
                     ),
                     ..default()
                 }),

@@ -1,4 +1,4 @@
-use image::{RgbaImage, Rgba};
+use image::{GenericImageView, RgbaImage, Rgba};
 use std::path::{Path, PathBuf};
 
 const ATLAS_SIZE: u32 = 256;

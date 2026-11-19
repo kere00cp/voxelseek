@@ -421,7 +421,7 @@ fn load_mods(
 
         let has = |name: &str, params: usize| {
             ast.iter_functions()
-                .any(|f| f.name.as_str() == name && f.params == params)
+                .any(|f| f.name == name && f.params.len() == params)
         };
         let on_load = has("on_load", 0);
 
@@ -534,8 +534,8 @@ struct ModWorld<'w, 's> {
 fn mod_runtime_system(
     time: Res<Time>,
     mut runtime: ResMut<ModRuntime>,
-    mut placed: MessageReader<BlockPlacedMsg>,
-    mut broken: MessageReader<BlockBrokenMsg>,
+    mut placed: bevy::ecs::message::MessageReader<BlockPlacedMsg>,
+    mut broken: bevy::ecs::message::MessageReader<BlockBrokenMsg>,
     mut console: ResMut<HarnessConsole>,
     mut world: ModWorld,
 ) {
@@ -611,13 +611,17 @@ fn mod_runtime_system(
 
     // --- console commands ("/cmd args...") ---
     let queued: Vec<(String, Vec<String>)> = runtime.command_queue.drain(..).collect();
-    let mut handled_any = false;
     for (cmd, args) in queued {
+        let mut handled_any = false;
         for i in 0..runtime.mods.len() {
             if runtime.mods[i].on_command {
                 handled_any = true;
                 let m = &mut runtime.mods[i];
-                let call_args = (cmd.clone(), args.clone());
+                let dyn_args: Vec<rhai::Dynamic> = args
+                    .iter()
+                    .map(|a| rhai::Dynamic::from(a.clone()))
+                    .collect();
+                let call_args = (cmd.clone(), dyn_args);
                 if let Err(e) = m.engine.call_fn::<()>(&mut m.scope, &m.ast, "on_command", call_args) {
                     let id = m.meta.id.clone();
                     console.push(ChatLine::system(format!("mod '{id}' on_command: {e}")));
@@ -658,7 +662,7 @@ fn mod_runtime_system(
                     inventory: &mut world.inventory,
                     cycle: &mut world.cycle,
                     player_pos: player_tf.translation,
-                    player_tf: &mut player_tf,
+                    player_tf: &mut *player_tf,
                     remesh: &mut remesh,
                 };
                 let result = tools::execute(&call, &mut ctx);
@@ -681,7 +685,7 @@ fn mod_runtime_system(
                     inventory: &mut world.inventory,
                     cycle: &mut world.cycle,
                     player_pos: player_tf.translation,
-                    player_tf: &mut player_tf,
+                    player_tf: &mut *player_tf,
                     remesh: &mut remesh,
                 };
                 let result = tools::execute(&call, &mut ctx);

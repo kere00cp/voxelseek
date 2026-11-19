@@ -25,13 +25,13 @@ use super::{ChatLine, HarnessChannel, HarnessConfig, HarnessConsole, HarnessHist
 // ---------------------------------------------------------------------------
 
 #[derive(Component)]
-struct ConsoleRoot;
+pub(crate) struct ConsoleRoot;
 
 #[derive(Component)]
-struct ConsoleLogText;
+pub(crate) struct ConsoleLogText;
 
 #[derive(Component)]
-struct ConsoleInputText;
+pub(crate) struct ConsoleInputText;
 
 /// Spawn the (initially hidden) console overlay.
 pub fn setup_console_ui(mut commands: Commands) {
@@ -159,6 +159,7 @@ pub fn toggle_console(
     }
 
     console.open = true;
+    console.just_opened = true;
     console.input.clear();
     if console.log.is_empty() {
         console.push(ChatLine::system(
@@ -184,6 +185,9 @@ pub fn toggle_console(
 pub fn clear_frame_flags(mut console: ResMut<HarnessConsole>) {
     if console.just_closed {
         console.just_closed = false;
+    }
+    if console.just_opened {
+        console.just_opened = false;
     }
 }
 
@@ -252,6 +256,11 @@ pub fn console_keyboard_input(
     mut mods: ResMut<crate::mods::ModRuntime>,
 ) {
     if !console.open {
+        return;
+    }
+    // Skip input on the frame the console opened so the opening `T`
+    // keypress is not typed into the input field.
+    if console.just_opened {
         return;
     }
 
@@ -346,7 +355,7 @@ pub fn poll_network(
     cfg: Res<HarnessConfig>,
     mut access: WorldAccess,
 ) {
-    let Ok(outcome) = channel.rx.try_recv() else {
+    let Ok(outcome) = channel.rx.lock().unwrap().try_recv() else {
         return;
     };
     console.busy = false;
@@ -356,7 +365,7 @@ pub fn poll_network(
             console.push(ChatLine::system(format!("Error: {e}")));
         }
         ApiOutcome::Final { content } => {
-            history.messages.push(json!({"role": "assistant", "content": content}));
+            history.messages.push(json!({"role": "assistant", "content": content.clone()}));
             history.rounds = 0;
             history.trim();
             console.push(ChatLine::assistant(&content));
@@ -381,7 +390,7 @@ pub fn poll_network(
                     inventory: &mut access.inventory,
                     cycle: &mut access.cycle,
                     player_pos: player_tf.translation,
-                    player_tf: &mut player_tf,
+                    player_tf: &mut *player_tf,
                     remesh: &mut remesh,
                 };
                 let result = tools::execute(call, &mut ctx);

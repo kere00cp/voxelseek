@@ -52,7 +52,7 @@ fn run(cfg: &HarnessConfig, history: Vec<Value>) -> ApiOutcome {
 
     let url = format!("{}/chat/completions", cfg.base_url);
     let body = json!({
-        "model": cfg.model,
+        "model": &cfg.model,
         "messages": history,
         "tools": tool_schemas(),
         "tool_choice": "auto",
