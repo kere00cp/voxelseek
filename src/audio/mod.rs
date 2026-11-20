@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use bevy::ecs::message::{Message, MessageReader, MessageWriter};
+use bevy::prelude::*;
 
 /// Message fired when a block is broken.
 #[derive(Message)]
@@ -103,7 +103,10 @@ fn load_sounds(mut commands: Commands, asset_server: Res<AssetServer>) {
         sword_swing: asset_server.load("sounds/sword_swing.ogg"),
         item_pickup: asset_server.load("sounds/place.ogg"), // reuse place sound for pickup pop
     });
-    commands.insert_resource(FootstepTimer(Timer::from_seconds(0.4, TimerMode::Repeating)));
+    commands.insert_resource(FootstepTimer(Timer::from_seconds(
+        0.4,
+        TimerMode::Repeating,
+    )));
 }
 
 fn play_break_sound(
@@ -136,10 +139,7 @@ fn play_place_sound(
 fn footstep_detector(
     time: Res<Time>,
     mut timer: ResMut<FootstepTimer>,
-    query: Query<
-        (&crate::player::Velocity, &crate::player::OnGround),
-        With<crate::player::Player>,
-    >,
+    query: Query<(&crate::player::Velocity, &crate::player::OnGround), With<crate::player::Player>>,
     mut footstep_writer: MessageWriter<FootstepAudio>,
 ) {
     let Ok((vel, on_ground)) = query.single() else {
@@ -208,10 +208,7 @@ fn play_mob_hurt_sound(
         } else {
             sounds.skeleton_hurt.clone()
         };
-        commands.spawn((
-            AudioPlayer::new(handle),
-            PlaybackSettings::DESPAWN,
-        ));
+        commands.spawn((AudioPlayer::new(handle), PlaybackSettings::DESPAWN));
     }
 }
 

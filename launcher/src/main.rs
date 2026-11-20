@@ -165,8 +165,16 @@ fn scan_packs(game_dir: &Path) -> Vec<PackInfo> {
         let (mut name, mut license) = (id.clone(), String::new());
         if let Ok(text) = std::fs::read_to_string(dir.join("pack.toml")) {
             if let Ok(v) = toml::from_str::<toml::Value>(&text) {
-                name = v.get("name").and_then(|x| x.as_str()).unwrap_or(&id).to_string();
-                license = v.get("license").and_then(|x| x.as_str()).unwrap_or("").to_string();
+                name = v
+                    .get("name")
+                    .and_then(|x| x.as_str())
+                    .unwrap_or(&id)
+                    .to_string();
+                license = v
+                    .get("license")
+                    .and_then(|x| x.as_str())
+                    .unwrap_or("")
+                    .to_string();
             }
         }
         out.push(PackInfo { id, name, license });
@@ -195,11 +203,26 @@ fn scan_mods(game_dir: &Path, disabled: &[String]) -> Vec<ModInfo> {
         };
         if let Ok(text) = std::fs::read_to_string(dir.join("mod.toml")) {
             if let Ok(v) = toml::from_str::<toml::Value>(&text) {
-                info.id = v.get("id").and_then(|x| x.as_str()).unwrap_or(&info.id).to_string();
-                info.name = v.get("name").and_then(|x| x.as_str()).unwrap_or(&info.name).to_string();
-                info.version = v.get("version").and_then(|x| x.as_str()).unwrap_or("").to_string();
-                info.description =
-                    v.get("description").and_then(|x| x.as_str()).unwrap_or("").to_string();
+                info.id = v
+                    .get("id")
+                    .and_then(|x| x.as_str())
+                    .unwrap_or(&info.id)
+                    .to_string();
+                info.name = v
+                    .get("name")
+                    .and_then(|x| x.as_str())
+                    .unwrap_or(&info.name)
+                    .to_string();
+                info.version = v
+                    .get("version")
+                    .and_then(|x| x.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                info.description = v
+                    .get("description")
+                    .and_then(|x| x.as_str())
+                    .unwrap_or("")
+                    .to_string();
             }
         }
         info.enabled = !disabled.iter().any(|d| d == &info.id);
@@ -314,7 +337,10 @@ impl LauncherApp {
                 Ok(o) if o.status.success() => "构建完成 ✔".to_string(),
                 Ok(o) => format!(
                     "构建失败:\n{}",
-                    String::from_utf8_lossy(&o.stderr).chars().take(800).collect::<String>()
+                    String::from_utf8_lossy(&o.stderr)
+                        .chars()
+                        .take(800)
+                        .collect::<String>()
                 ),
                 Err(e) => format!("无法运行 cargo: {e}"),
             };
@@ -363,8 +389,9 @@ impl eframe::App for LauncherApp {
                 .show(ui, |ui| {
                     ui.horizontal(|ui| {
                         ui.label("API Key:");
-                        let mut edit = egui::TextEdit::singleline(&mut self.config.deepseek_api_key)
-                            .desired_width(280.0);
+                        let mut edit =
+                            egui::TextEdit::singleline(&mut self.config.deepseek_api_key)
+                                .desired_width(280.0);
                         edit = edit.password(!self.show_api_key);
                         ui.add(edit);
                         ui.checkbox(&mut self.show_api_key, "显示");
@@ -420,7 +447,10 @@ impl eframe::App for LauncherApp {
                     });
                     ui.horizontal(|ui| {
                         ui.label("渲染距离 (区块):");
-                        ui.add(egui::Slider::new(&mut self.settings.render_distance, 2..=24));
+                        ui.add(egui::Slider::new(
+                            &mut self.settings.render_distance,
+                            2..=24,
+                        ));
                     });
                     ui.horizontal(|ui| {
                         ui.label("视场角 FOV:");
@@ -454,9 +484,16 @@ impl eframe::App for LauncherApp {
                 let running = self.child.is_some();
                 let building = self.build_rx.is_some();
 
-                let launch_text = if running { "运行中…" } else { "▶ 启动游戏" };
+                let launch_text = if running {
+                    "运行中…"
+                } else {
+                    "▶ 启动游戏"
+                };
                 if ui
-                    .add_enabled(!running && !building, egui::Button::new(launch_text).min_size([120.0, 36.0].into()))
+                    .add_enabled(
+                        !running && !building,
+                        egui::Button::new(launch_text).min_size([120.0, 36.0].into()),
+                    )
                     .clicked()
                 {
                     self.launch();
@@ -468,7 +505,14 @@ impl eframe::App for LauncherApp {
                     self.status = "已结束游戏进程".into();
                 }
                 if ui
-                    .add_enabled(!building, egui::Button::new(if building { "构建中…" } else { "构建游戏" }))
+                    .add_enabled(
+                        !building,
+                        egui::Button::new(if building {
+                            "构建中…"
+                        } else {
+                            "构建游戏"
+                        }),
+                    )
                     .clicked()
                 {
                     self.build_game();

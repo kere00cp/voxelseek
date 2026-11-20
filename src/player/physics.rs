@@ -3,15 +3,15 @@ use bevy::prelude::*;
 use crate::world::chunk::CHUNK_SIZE;
 use crate::world::manager::ChunkDataStore;
 
-use super::{Player, Velocity, OnGround, Health, FallTracker, AirSupply, Hunger, PendingExhaustion, JustJumped, Sneaking, PLAYER_EYE_HEIGHT};
+use super::{
+    AirSupply, FallTracker, Health, Hunger, JustJumped, OnGround, PLAYER_EYE_HEIGHT,
+    PendingExhaustion, Player, Sneaking, Velocity,
+};
 
 const GRAVITY: f32 = 20.0;
 const JUMP_VELOCITY: f32 = 7.4;
 
-pub fn apply_gravity(
-    time: Res<Time>,
-    mut query: Query<(&mut Velocity, &OnGround), With<Player>>,
-) {
+pub fn apply_gravity(time: Res<Time>, mut query: Query<(&mut Velocity, &OnGround), With<Player>>) {
     let dt = time.delta_secs();
     for (mut vel, on_ground) in &mut query {
         if !on_ground.0 {
@@ -52,7 +52,9 @@ pub fn ground_collision(
                     break;
                 }
             }
-            if solid_below { break; }
+            if solid_below {
+                break;
+            }
         }
 
         if solid_below && vel.0.y <= 0.0 {
@@ -80,14 +82,15 @@ pub fn ground_collision(
                         break;
                     }
                 }
-                if hit_ceiling { break; }
+                if hit_ceiling {
+                    break;
+                }
             }
             if hit_ceiling {
                 tf.translation.y = head_check as f32 - PLAYER_HEIGHT_FULL - 0.001;
                 vel.0.y = 0.0;
             }
         }
-
     }
 }
 
@@ -157,7 +160,16 @@ pub fn hunger_system(
     time: Res<Time>,
     mut timers: ResMut<HungerTimers>,
     mut pending: ResMut<PendingExhaustion>,
-    mut query: Query<(&mut Hunger, &mut Health, &Velocity, &OnGround, &mut JustJumped), With<Player>>,
+    mut query: Query<
+        (
+            &mut Hunger,
+            &mut Health,
+            &Velocity,
+            &OnGround,
+            &mut JustJumped,
+        ),
+        With<Player>,
+    >,
     input: Res<ButtonInput<KeyCode>>,
     dead: Res<crate::ui::death_screen::PlayerDead>,
 ) {
@@ -380,13 +392,16 @@ pub fn sneak_edge_protection(
             (pos.x - PLAYER_HALF_WIDTH, pos.z - PLAYER_HALF_WIDTH),
             (pos.x - PLAYER_HALF_WIDTH, pos.z + PLAYER_HALF_WIDTH - 0.001),
             (pos.x + PLAYER_HALF_WIDTH - 0.001, pos.z - PLAYER_HALF_WIDTH),
-            (pos.x + PLAYER_HALF_WIDTH - 0.001, pos.z + PLAYER_HALF_WIDTH - 0.001),
+            (
+                pos.x + PLAYER_HALF_WIDTH - 0.001,
+                pos.z + PLAYER_HALF_WIDTH - 0.001,
+            ),
         ];
 
         // Check if there's any solid ground under the player at all at check_y
-        let has_any_ground = corners.iter().any(|(cx, cz)| {
-            is_block_solid(&store, cx.floor() as i32, check_y, cz.floor() as i32)
-        });
+        let has_any_ground = corners
+            .iter()
+            .any(|(cx, cz)| is_block_solid(&store, cx.floor() as i32, check_y, cz.floor() as i32));
 
         if !has_any_ground {
             // Already fully over air (shouldn't happen normally), don't clamp
@@ -394,10 +409,28 @@ pub fn sneak_edge_protection(
         }
 
         // Clamp X: check if moving in X caused corners to go over air
-        let min_x_over_air = !is_block_solid(&store, (pos.x - PLAYER_HALF_WIDTH).floor() as i32, check_y, (pos.z - PLAYER_HALF_WIDTH).floor() as i32)
-            || !is_block_solid(&store, (pos.x - PLAYER_HALF_WIDTH).floor() as i32, check_y, (pos.z + PLAYER_HALF_WIDTH - 0.001).floor() as i32);
-        let max_x_over_air = !is_block_solid(&store, (pos.x + PLAYER_HALF_WIDTH - 0.001).floor() as i32, check_y, (pos.z - PLAYER_HALF_WIDTH).floor() as i32)
-            || !is_block_solid(&store, (pos.x + PLAYER_HALF_WIDTH - 0.001).floor() as i32, check_y, (pos.z + PLAYER_HALF_WIDTH - 0.001).floor() as i32);
+        let min_x_over_air = !is_block_solid(
+            &store,
+            (pos.x - PLAYER_HALF_WIDTH).floor() as i32,
+            check_y,
+            (pos.z - PLAYER_HALF_WIDTH).floor() as i32,
+        ) || !is_block_solid(
+            &store,
+            (pos.x - PLAYER_HALF_WIDTH).floor() as i32,
+            check_y,
+            (pos.z + PLAYER_HALF_WIDTH - 0.001).floor() as i32,
+        );
+        let max_x_over_air = !is_block_solid(
+            &store,
+            (pos.x + PLAYER_HALF_WIDTH - 0.001).floor() as i32,
+            check_y,
+            (pos.z - PLAYER_HALF_WIDTH).floor() as i32,
+        ) || !is_block_solid(
+            &store,
+            (pos.x + PLAYER_HALF_WIDTH - 0.001).floor() as i32,
+            check_y,
+            (pos.z + PLAYER_HALF_WIDTH - 0.001).floor() as i32,
+        );
 
         if min_x_over_air {
             let edge = (pos.x - PLAYER_HALF_WIDTH).floor() + 1.0;
@@ -410,10 +443,28 @@ pub fn sneak_edge_protection(
 
         // Re-read position after X clamp for Z checks
         let pos = tf.translation;
-        let min_z_over_air = !is_block_solid(&store, (pos.x - PLAYER_HALF_WIDTH).floor() as i32, check_y, (pos.z - PLAYER_HALF_WIDTH).floor() as i32)
-            || !is_block_solid(&store, (pos.x + PLAYER_HALF_WIDTH - 0.001).floor() as i32, check_y, (pos.z - PLAYER_HALF_WIDTH).floor() as i32);
-        let max_z_over_air = !is_block_solid(&store, (pos.x - PLAYER_HALF_WIDTH).floor() as i32, check_y, (pos.z + PLAYER_HALF_WIDTH - 0.001).floor() as i32)
-            || !is_block_solid(&store, (pos.x + PLAYER_HALF_WIDTH - 0.001).floor() as i32, check_y, (pos.z + PLAYER_HALF_WIDTH - 0.001).floor() as i32);
+        let min_z_over_air = !is_block_solid(
+            &store,
+            (pos.x - PLAYER_HALF_WIDTH).floor() as i32,
+            check_y,
+            (pos.z - PLAYER_HALF_WIDTH).floor() as i32,
+        ) || !is_block_solid(
+            &store,
+            (pos.x + PLAYER_HALF_WIDTH - 0.001).floor() as i32,
+            check_y,
+            (pos.z - PLAYER_HALF_WIDTH).floor() as i32,
+        );
+        let max_z_over_air = !is_block_solid(
+            &store,
+            (pos.x - PLAYER_HALF_WIDTH).floor() as i32,
+            check_y,
+            (pos.z + PLAYER_HALF_WIDTH - 0.001).floor() as i32,
+        ) || !is_block_solid(
+            &store,
+            (pos.x + PLAYER_HALF_WIDTH - 0.001).floor() as i32,
+            check_y,
+            (pos.z + PLAYER_HALF_WIDTH - 0.001).floor() as i32,
+        );
 
         if min_z_over_air {
             let edge = (pos.z - PLAYER_HALF_WIDTH).floor() + 1.0;

@@ -1,43 +1,45 @@
 use bevy::prelude::*;
 use bevy::window::WindowResolution;
 
-mod block;
-mod world;
-mod player;
-mod ui;
-mod lighting;
 mod audio;
-mod inventory;
-mod save;
+mod block;
 mod entity;
 mod harness;
-mod settings;
+mod inventory;
+mod lighting;
 mod mods;
+mod player;
+mod save;
+mod settings;
+mod ui;
+mod world;
 
 fn main() {
     let game_settings = settings::GameSettings::load();
 
     App::new()
-        .add_plugins(DefaultPlugins
-            .set(ImagePlugin {
-                default_sampler: bevy::image::ImageSamplerDescriptor {
-                    mag_filter: bevy::image::ImageFilterMode::Nearest,
-                    min_filter: bevy::image::ImageFilterMode::Nearest,
-                    mipmap_filter: bevy::image::ImageFilterMode::Nearest,
-                    ..default()
-                },
-            })
-            .set(WindowPlugin {
-                primary_window: Some(Window {
-                    title: "VoxelSeek".to_string(),
-                    resolution: WindowResolution::new(
-                        game_settings.window_width as u32,
-                        game_settings.window_height as u32,
-                    ),
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin {
+                    default_sampler: bevy::image::ImageSamplerDescriptor {
+                        mag_filter: bevy::image::ImageFilterMode::Nearest,
+                        min_filter: bevy::image::ImageFilterMode::Nearest,
+                        mipmap_filter: bevy::image::ImageFilterMode::Nearest,
+                        ..default()
+                    },
+                })
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        title: "VoxelSeek".to_string(),
+                        resolution: WindowResolution::new(
+                            game_settings.window_width as u32,
+                            game_settings.window_height as u32,
+                        ),
+                        ..default()
+                    }),
                     ..default()
                 }),
-                ..default()
-            }))
+        )
         .insert_resource(game_settings)
         .init_state::<GameState>()
         .add_plugins((

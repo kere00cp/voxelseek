@@ -27,7 +27,11 @@ fn setup_ui_atlas(
 ) {
     let image = asset_server.load(settings.atlas_path());
     let layout = layouts.add(TextureAtlasLayout::from_grid(
-        UVec2::new(16, 16), 16, 16, None, None,
+        UVec2::new(16, 16),
+        16,
+        16,
+        None,
+        None,
     ));
     commands.insert_resource(UiAtlas { image, layout });
 }
@@ -42,10 +46,7 @@ impl Plugin for UiPlugin {
             .init_resource::<inventory_screen::CursorItem>()
             .init_resource::<pause_menu::PauseState>()
             .init_resource::<main_menu::InMainMenu>()
-            .add_systems(Startup, (
-                setup_ui_atlas,
-                main_menu::setup_main_menu,
-            ))
+            .add_systems(Startup, (setup_ui_atlas, main_menu::setup_main_menu))
             .add_systems(
                 Update,
                 (
@@ -83,8 +84,7 @@ impl Plugin for UiPlugin {
                         .after(hotbar::sync_hotbar_from_inventory),
                     hotbar::update_item_name.after(hotbar::hotbar_input),
                     inventory_screen::toggle_inventory,
-                    inventory_screen::spawn_inventory_ui
-                        .after(inventory_screen::toggle_inventory),
+                    inventory_screen::spawn_inventory_ui.after(inventory_screen::toggle_inventory),
                     inventory_screen::despawn_inventory_ui
                         .after(inventory_screen::toggle_inventory),
                     inventory_screen::inventory_slot_interaction,
@@ -111,10 +111,8 @@ impl Plugin for UiPlugin {
                 Update,
                 (
                     furnace_screen::toggle_furnace,
-                    furnace_screen::spawn_furnace_ui
-                        .after(furnace_screen::toggle_furnace),
-                    furnace_screen::despawn_furnace_ui
-                        .after(furnace_screen::toggle_furnace),
+                    furnace_screen::spawn_furnace_ui.after(furnace_screen::toggle_furnace),
+                    furnace_screen::despawn_furnace_ui.after(furnace_screen::toggle_furnace),
                     furnace_screen::furnace_input_interaction,
                     furnace_screen::furnace_fuel_interaction,
                     furnace_screen::furnace_output_interaction,
@@ -140,10 +138,8 @@ impl Plugin for UiPlugin {
                 Update,
                 (
                     chest_screen::toggle_chest,
-                    chest_screen::spawn_chest_ui
-                        .after(chest_screen::toggle_chest),
-                    chest_screen::despawn_chest_ui
-                        .after(chest_screen::toggle_chest),
+                    chest_screen::spawn_chest_ui.after(chest_screen::toggle_chest),
+                    chest_screen::despawn_chest_ui.after(chest_screen::toggle_chest),
                     chest_screen::chest_slot_interaction,
                     chest_screen::chest_inv_slot_interaction,
                     chest_screen::update_chest_ui,
@@ -164,17 +160,13 @@ impl Plugin for UiPlugin {
                 Update,
                 (
                     debug_map::toggle_debug_map,
-                    debug_map::debug_map_input
-                        .after(debug_map::toggle_debug_map),
-                    debug_map::spawn_debug_map_ui
-                        .after(debug_map::toggle_debug_map),
-                    debug_map::despawn_debug_map_ui
-                        .after(debug_map::toggle_debug_map),
+                    debug_map::debug_map_input.after(debug_map::toggle_debug_map),
+                    debug_map::spawn_debug_map_ui.after(debug_map::toggle_debug_map),
+                    debug_map::despawn_debug_map_ui.after(debug_map::toggle_debug_map),
                     debug_map::regenerate_debug_map
                         .after(debug_map::debug_map_input)
                         .after(debug_map::spawn_debug_map_ui),
-                    debug_map::update_debug_map_text
-                        .after(debug_map::regenerate_debug_map),
+                    debug_map::update_debug_map_text.after(debug_map::regenerate_debug_map),
                 ),
             );
     }

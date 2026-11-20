@@ -1,11 +1,11 @@
-use bevy::prelude::*;
-use bevy::image::Image;
 use bevy::asset::RenderAssetUsages;
+use bevy::image::Image;
+use bevy::prelude::*;
 use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
 
 use crate::block::BlockType;
 use crate::player::Player;
-use crate::world::chunk::{Chunk, CHUNK_SIZE};
+use crate::world::chunk::{CHUNK_SIZE, Chunk};
 use crate::world::generation::generate_chunk;
 
 /// Size of the debug map in world blocks (and pixels).
@@ -125,8 +125,10 @@ fn block_color(block: BlockType) -> [u8; 4] {
         BlockType::TallGrass => [50, 130, 50, 255],
         BlockType::Chest => [160, 120, 50, 255],
         BlockType::Bed => [180, 50, 50, 255],
-        BlockType::DoorBottom | BlockType::DoorTop
-        | BlockType::DoorBottomOpen | BlockType::DoorTopOpen => [160, 120, 60, 255],
+        BlockType::DoorBottom
+        | BlockType::DoorTop
+        | BlockType::DoorBottomOpen
+        | BlockType::DoorTopOpen => [160, 120, 60, 255],
         BlockType::OakSapling => [34, 139, 34, 255],
         BlockType::BirchSapling => [50, 160, 50, 255],
         BlockType::Farmland => [100, 65, 25, 255],
@@ -138,10 +140,7 @@ fn block_color(block: BlockType) -> [u8; 4] {
 }
 
 /// Toggle the debug map open/closed with F4.
-pub fn toggle_debug_map(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut state: ResMut<DebugMapState>,
-) {
+pub fn toggle_debug_map(keys: Res<ButtonInput<KeyCode>>, mut state: ResMut<DebugMapState>) {
     if keys.just_pressed(KeyCode::F4) {
         state.open = !state.open;
         if state.open {
@@ -151,10 +150,7 @@ pub fn toggle_debug_map(
 }
 
 /// Handle Y level and mode changes.
-pub fn debug_map_input(
-    keys: Res<ButtonInput<KeyCode>>,
-    mut state: ResMut<DebugMapState>,
-) {
+pub fn debug_map_input(keys: Res<ButtonInput<KeyCode>>, mut state: ResMut<DebugMapState>) {
     if !state.open {
         return;
     }
@@ -202,8 +198,7 @@ pub fn spawn_debug_map_ui(
         TextureFormat::Rgba8UnormSrgb,
         RenderAssetUsages::default(),
     );
-    image.texture_descriptor.usage =
-        bevy::render::render_resource::TextureUsages::TEXTURE_BINDING
+    image.texture_descriptor.usage = bevy::render::render_resource::TextureUsages::TEXTURE_BINDING
         | bevy::render::render_resource::TextureUsages::COPY_DST;
     let image_handle = images.add(image);
 
@@ -396,8 +391,16 @@ pub fn regenerate_debug_map(
     let chunk_x_min = state.chunk_x_origin;
     let chunk_z_min = state.chunk_z_origin;
     let cy_count = state.chunks.len();
-    let cz_count = if cy_count > 0 { state.chunks[0].len() } else { 0 };
-    let cx_count = if cz_count > 0 && cy_count > 0 { state.chunks[0][0].len() } else { 0 };
+    let cz_count = if cy_count > 0 {
+        state.chunks[0].len()
+    } else {
+        0
+    };
+    let cx_count = if cz_count > 0 && cy_count > 0 {
+        state.chunks[0][0].len()
+    } else {
+        0
+    };
 
     for pz in 0..MAP_SIZE {
         let wz = origin_z + pz as i32;
@@ -408,9 +411,16 @@ pub fn regenerate_debug_map(
             let color = match state.mode {
                 DebugMapMode::Block => {
                     let block = sample_block(
-                        &state.chunks, wx, y_level, wz,
-                        chunk_x_min, state.chunk_y_min, chunk_z_min,
-                        cx_count, cy_count, cz_count,
+                        &state.chunks,
+                        wx,
+                        y_level,
+                        wz,
+                        chunk_x_min,
+                        state.chunk_y_min,
+                        chunk_z_min,
+                        cx_count,
+                        cy_count,
+                        cz_count,
                     );
                     block_color(block)
                 }
@@ -422,9 +432,16 @@ pub fn regenerate_debug_map(
                 }
                 DebugMapMode::Cave => {
                     let block = sample_block(
-                        &state.chunks, wx, y_level, wz,
-                        chunk_x_min, state.chunk_y_min, chunk_z_min,
-                        cx_count, cy_count, cz_count,
+                        &state.chunks,
+                        wx,
+                        y_level,
+                        wz,
+                        chunk_x_min,
+                        state.chunk_y_min,
+                        chunk_z_min,
+                        cx_count,
+                        cy_count,
+                        cz_count,
                     );
                     let terrain_h = state.heightmap[pz][px];
                     if y_level >= terrain_h {
@@ -447,9 +464,16 @@ pub fn regenerate_debug_map(
                     // Check what the surface block is at this column
                     let h = state.heightmap[pz][px];
                     let surface_block = sample_block(
-                        &state.chunks, wx, h, wz,
-                        chunk_x_min, state.chunk_y_min, chunk_z_min,
-                        cx_count, cy_count, cz_count,
+                        &state.chunks,
+                        wx,
+                        h,
+                        wz,
+                        chunk_x_min,
+                        state.chunk_y_min,
+                        chunk_z_min,
+                        cx_count,
+                        cy_count,
+                        cz_count,
                     );
                     match surface_block {
                         BlockType::Sand | BlockType::Sandstone => [237, 201, 100, 255], // desert yellow
@@ -476,9 +500,15 @@ pub fn regenerate_debug_map(
 /// Sample a block from the cached chunk data at world coordinates.
 fn sample_block(
     chunks: &[Vec<Vec<Chunk>>],
-    wx: i32, wy: i32, wz: i32,
-    chunk_x_min: i32, chunk_y_min: i32, chunk_z_min: i32,
-    cx_count: usize, cy_count: usize, cz_count: usize,
+    wx: i32,
+    wy: i32,
+    wz: i32,
+    chunk_x_min: i32,
+    chunk_y_min: i32,
+    chunk_z_min: i32,
+    cx_count: usize,
+    cy_count: usize,
+    cz_count: usize,
 ) -> BlockType {
     if wy < 0 || wy > 255 {
         return BlockType::Air;

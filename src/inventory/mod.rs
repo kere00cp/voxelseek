@@ -19,18 +19,22 @@ impl Plugin for InventoryPlugin {
             .init_resource::<furnace::FurnaceOpen>()
             .insert_resource(crate::save::persistence::load_chests())
             .init_resource::<chest::ChestOpen>()
-            .add_systems(Update, (
-                crafting::update_crafting_output,
-                crafting::update_crafting_table_output,
-                furnace::furnace_tick,
-            ));
+            .add_systems(
+                Update,
+                (
+                    crafting::update_crafting_output,
+                    crafting::update_crafting_table_output,
+                    furnace::furnace_tick,
+                ),
+            );
     }
 }
 
 fn load_saved_inventory() -> inventory::Inventory {
     if let Some(data) = crate::save::persistence::load_player() {
         if data.inventory.len() == inventory::INVENTORY_SLOTS {
-            let mut slots: [inventory::Slot; inventory::INVENTORY_SLOTS] = [None; inventory::INVENTORY_SLOTS];
+            let mut slots: [inventory::Slot; inventory::INVENTORY_SLOTS] =
+                [None; inventory::INVENTORY_SLOTS];
             for (i, slot) in data.inventory.into_iter().enumerate() {
                 slots[i] = slot;
             }

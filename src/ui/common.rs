@@ -1,16 +1,15 @@
 use bevy::prelude::*;
 use bevy::window::PrimaryWindow;
 
-use crate::block::BlockType;
-use crate::block::atlas::texture_index;
-use crate::block::Face;
-use crate::inventory::item::Item;
 use super::UiAtlas;
+use crate::block::BlockType;
+use crate::block::Face;
+use crate::block::atlas::texture_index;
+use crate::inventory::item::Item;
 
 /// Marker for the shared hover tooltip text entity.
 #[derive(Component)]
 pub struct SlotHoverTooltip;
-
 
 pub const SLOT_SIZE: f32 = 40.0;
 pub const SLOT_GAP: f32 = 2.0;
@@ -35,7 +34,11 @@ pub fn slot_image(atlas: &UiAtlas, data: &SlotData) -> ImageNode {
             }
         })
     });
-    let color = if texture_atlas.is_some() { Color::WHITE } else { Color::NONE };
+    let color = if texture_atlas.is_some() {
+        Color::WHITE
+    } else {
+        Color::NONE
+    };
     ImageNode {
         image: atlas.image.clone(),
         texture_atlas,
@@ -104,15 +107,17 @@ pub fn item_placeholder_color(item: Item) -> Color {
         Item::DiamondHoe => Color::srgb(0.3, 0.9, 0.85),
         Item::Seeds => Color::srgb(0.3, 0.6, 0.15),
         Item::Wheat => Color::srgb(0.8, 0.75, 0.2),
-        Item::LeatherHelmet | Item::LeatherChestplate | Item::LeatherLeggings | Item::LeatherBoots => {
-            Color::srgb(0.6, 0.4, 0.25)
-        }
+        Item::LeatherHelmet
+        | Item::LeatherChestplate
+        | Item::LeatherLeggings
+        | Item::LeatherBoots => Color::srgb(0.6, 0.4, 0.25),
         Item::IronHelmet | Item::IronChestplate | Item::IronLeggings | Item::IronBoots => {
             Color::srgb(0.8, 0.8, 0.85)
         }
-        Item::DiamondHelmet | Item::DiamondChestplate | Item::DiamondLeggings | Item::DiamondBoots => {
-            Color::srgb(0.3, 0.9, 0.85)
-        }
+        Item::DiamondHelmet
+        | Item::DiamondChestplate
+        | Item::DiamondLeggings
+        | Item::DiamondBoots => Color::srgb(0.3, 0.9, 0.85),
         Item::Block(_) => Color::NONE,
     }
 }
@@ -154,8 +159,10 @@ pub fn block_color(block: BlockType) -> Color {
         BlockType::TallGrass => Color::srgb(0.25, 0.55, 0.18),
         BlockType::Chest => Color::srgb(0.6, 0.45, 0.2),
         BlockType::Bed => Color::srgb(0.7, 0.2, 0.2),
-        BlockType::DoorBottom | BlockType::DoorTop
-        | BlockType::DoorBottomOpen | BlockType::DoorTopOpen => Color::srgb(0.6, 0.45, 0.25),
+        BlockType::DoorBottom
+        | BlockType::DoorTop
+        | BlockType::DoorBottomOpen
+        | BlockType::DoorTopOpen => Color::srgb(0.6, 0.45, 0.25),
         BlockType::OakSapling => Color::srgb(0.2, 0.5, 0.15),
         BlockType::BirchSapling => Color::srgb(0.35, 0.6, 0.25),
         BlockType::Farmland => Color::srgb(0.4, 0.25, 0.1),
@@ -239,7 +246,10 @@ pub fn spawn_slot_hover_tooltip(mut commands: Commands) {
         SlotHoverTooltip,
         Text::new(""),
         TextColor(Color::WHITE),
-        TextFont { font_size: 12.0, ..default() },
+        TextFont {
+            font_size: 12.0,
+            ..default()
+        },
         Node {
             position_type: PositionType::Absolute,
             left: Val::Px(0.0),
@@ -293,7 +303,9 @@ pub fn update_slot_hover_tooltip(
     data: SlotDataSources,
     mut tooltip_q: Query<(&mut Text, &mut Node, &mut Visibility), With<SlotHoverTooltip>>,
 ) {
-    let Ok((mut text, mut node, mut vis)) = tooltip_q.single_mut() else { return };
+    let Ok((mut text, mut node, mut vis)) = tooltip_q.single_mut() else {
+        return;
+    };
 
     let mut found_name: Option<String> = None;
 
@@ -452,7 +464,9 @@ pub fn swap_slot_right_click(slot: &mut SlotData, cursor: &mut SlotData) {
             }
         }
         // Cursor item + same type slot -> place 1 item (if room)
-        (Some(held_item), Some(existing_item)) if held_item.0 == existing_item.0 && !held_item.0.is_tool() => {
+        (Some(held_item), Some(existing_item))
+            if held_item.0 == existing_item.0 && !held_item.0.is_tool() =>
+        {
             let max = held_item.0.max_stack();
             if existing_item.1 < max {
                 *slot = Some((existing_item.0, existing_item.1 + 1, existing_item.2));

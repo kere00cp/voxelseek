@@ -104,7 +104,10 @@ mod tests {
         let mut inv = empty_inventory();
         assert!(inv.add_item(Item::Block(BlockType::Stone)));
         // Should go to hotbar first (slot 27)
-        assert_eq!(inv.slots[HOTBAR_START], Some((Item::Block(BlockType::Stone), 1, 0)));
+        assert_eq!(
+            inv.slots[HOTBAR_START],
+            Some((Item::Block(BlockType::Stone), 1, 0))
+        );
     }
 
     #[test]
@@ -112,7 +115,10 @@ mod tests {
         let mut inv = empty_inventory();
         inv.add_item(Item::Block(BlockType::Stone));
         inv.add_item(Item::Block(BlockType::Stone));
-        assert_eq!(inv.slots[HOTBAR_START], Some((Item::Block(BlockType::Stone), 2, 0)));
+        assert_eq!(
+            inv.slots[HOTBAR_START],
+            Some((Item::Block(BlockType::Stone), 2, 0))
+        );
         assert_eq!(inv.slots[HOTBAR_START + 1], None);
     }
 
@@ -121,8 +127,14 @@ mod tests {
         let mut inv = empty_inventory();
         inv.add_item(Item::Block(BlockType::Stone));
         inv.add_item(Item::Block(BlockType::Dirt));
-        assert_eq!(inv.slots[HOTBAR_START], Some((Item::Block(BlockType::Stone), 1, 0)));
-        assert_eq!(inv.slots[HOTBAR_START + 1], Some((Item::Block(BlockType::Dirt), 1, 0)));
+        assert_eq!(
+            inv.slots[HOTBAR_START],
+            Some((Item::Block(BlockType::Stone), 1, 0))
+        );
+        assert_eq!(
+            inv.slots[HOTBAR_START + 1],
+            Some((Item::Block(BlockType::Dirt), 1, 0))
+        );
     }
 
     #[test]
@@ -132,8 +144,14 @@ mod tests {
         inv.slots[HOTBAR_START] = Some((Item::Block(BlockType::Stone), 64, 0));
         assert!(inv.add_item(Item::Block(BlockType::Stone)));
         // Original slot unchanged, overflow goes to next hotbar slot
-        assert_eq!(inv.slots[HOTBAR_START], Some((Item::Block(BlockType::Stone), 64, 0)));
-        assert_eq!(inv.slots[HOTBAR_START + 1], Some((Item::Block(BlockType::Stone), 1, 0)));
+        assert_eq!(
+            inv.slots[HOTBAR_START],
+            Some((Item::Block(BlockType::Stone), 64, 0))
+        );
+        assert_eq!(
+            inv.slots[HOTBAR_START + 1],
+            Some((Item::Block(BlockType::Stone), 1, 0))
+        );
     }
 
     #[test]
@@ -143,7 +161,10 @@ mod tests {
         inv.add_item(Item::WoodenPickaxe);
         // Tools have max_stack=1, so they should use separate hotbar slots with durability
         assert_eq!(inv.slots[HOTBAR_START], Some((Item::WoodenPickaxe, 1, 59)));
-        assert_eq!(inv.slots[HOTBAR_START + 1], Some((Item::WoodenPickaxe, 1, 59)));
+        assert_eq!(
+            inv.slots[HOTBAR_START + 1],
+            Some((Item::WoodenPickaxe, 1, 59))
+        );
     }
 
     #[test]
@@ -192,7 +213,10 @@ mod tests {
         inv.add_item(Item::Block(BlockType::Glass));
         inv.add_item(Item::Block(BlockType::Glass));
         inv.add_item(Item::Block(BlockType::Glass));
-        assert_eq!(inv.slots[HOTBAR_START], Some((Item::Block(BlockType::Glass), 3, 0)));
+        assert_eq!(
+            inv.slots[HOTBAR_START],
+            Some((Item::Block(BlockType::Glass), 3, 0))
+        );
         inv.remove_item(HOTBAR_START);
         inv.remove_item(HOTBAR_START);
         inv.remove_item(HOTBAR_START);
@@ -236,7 +260,10 @@ mod tests {
         inv.slots[HOTBAR_START] = Some((Item::Block(BlockType::Stone), 10, 0));
         inv.add_item(Item::Block(BlockType::Stone));
         // Should stack in hotbar first
-        assert_eq!(inv.slots[HOTBAR_START], Some((Item::Block(BlockType::Stone), 11, 0)));
+        assert_eq!(
+            inv.slots[HOTBAR_START],
+            Some((Item::Block(BlockType::Stone), 11, 0))
+        );
         assert_eq!(inv.slots[0], Some((Item::Block(BlockType::Stone), 10, 0)));
     }
 

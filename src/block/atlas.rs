@@ -58,12 +58,12 @@ pub fn texture_index(block: BlockType, face: Face) -> u32 {
             _ => 32,
         },
         BlockType::Bed => match face {
-            Face::Top => 34,     // bed_head_top
-            Face::Bottom => 5,   // planks underside
-            _ => 35,             // bed_head_side for all sides
+            Face::Top => 34,   // bed_head_top
+            Face::Bottom => 5, // planks underside
+            _ => 35,           // bed_head_side for all sides
         },
         BlockType::DoorBottom | BlockType::DoorBottomOpen => 41, // door_wood_lower
-        BlockType::DoorTop | BlockType::DoorTopOpen => 40, // door_wood_upper
+        BlockType::DoorTop | BlockType::DoorTopOpen => 40,       // door_wood_upper
         BlockType::OakSapling => 42,
         BlockType::BirchSapling => 43,
         BlockType::Farmland => match face {

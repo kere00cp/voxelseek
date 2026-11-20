@@ -137,24 +137,30 @@ fn material_for_item(item: Item, assets: &DroppedItemAssets) -> Handle<StandardM
         Item::IronIngot => assets.iron_material.clone(),
         Item::GoldIngot => assets.gold_material.clone(),
         Item::Diamond => assets.diamond_material.clone(),
-        Item::Apple | Item::Bread | Item::CookedPorkchop | Item::RawPorkchop
-        | Item::RawBeef | Item::CookedBeef | Item::RawMutton | Item::CookedMutton
-        | Item::RottenFlesh => {
-            assets.food_material.clone()
-        }
+        Item::Apple
+        | Item::Bread
+        | Item::CookedPorkchop
+        | Item::RawPorkchop
+        | Item::RawBeef
+        | Item::CookedBeef
+        | Item::RawMutton
+        | Item::CookedMutton
+        | Item::RottenFlesh => assets.food_material.clone(),
         Item::Bone | Item::Wool => assets.iron_material.clone(),
         Item::Leather => assets.stick_material.clone(),
         Item::Seeds => assets.seed_material.clone(),
         Item::Wheat => assets.gold_material.clone(),
-        Item::LeatherHelmet | Item::LeatherChestplate | Item::LeatherLeggings | Item::LeatherBoots => {
-            assets.stick_material.clone()
-        }
+        Item::LeatherHelmet
+        | Item::LeatherChestplate
+        | Item::LeatherLeggings
+        | Item::LeatherBoots => assets.stick_material.clone(),
         Item::IronHelmet | Item::IronChestplate | Item::IronLeggings | Item::IronBoots => {
             assets.iron_material.clone()
         }
-        Item::DiamondHelmet | Item::DiamondChestplate | Item::DiamondLeggings | Item::DiamondBoots => {
-            assets.diamond_material.clone()
-        }
+        Item::DiamondHelmet
+        | Item::DiamondChestplate
+        | Item::DiamondLeggings
+        | Item::DiamondBoots => assets.diamond_material.clone(),
         _ => {
             if item.is_tool() {
                 assets.tool_material.clone()
@@ -172,17 +178,41 @@ fn block_item_mesh(block: BlockType) -> Mesh {
     // 6 faces, 4 verts each = 24 verts
     let face_data: [(Face, [[f32; 3]; 4], [f32; 3]); 6] = [
         // Top (+Y)
-        (Face::Top, [[-s, s, -s], [s, s, -s], [s, s, s], [-s, s, s]], [0.0, 1.0, 0.0]),
+        (
+            Face::Top,
+            [[-s, s, -s], [s, s, -s], [s, s, s], [-s, s, s]],
+            [0.0, 1.0, 0.0],
+        ),
         // Bottom (-Y)
-        (Face::Bottom, [[-s, -s, s], [s, -s, s], [s, -s, -s], [-s, -s, -s]], [0.0, -1.0, 0.0]),
+        (
+            Face::Bottom,
+            [[-s, -s, s], [s, -s, s], [s, -s, -s], [-s, -s, -s]],
+            [0.0, -1.0, 0.0],
+        ),
         // North (+Z)
-        (Face::North, [[-s, -s, s], [-s, s, s], [s, s, s], [s, -s, s]], [0.0, 0.0, 1.0]),
+        (
+            Face::North,
+            [[-s, -s, s], [-s, s, s], [s, s, s], [s, -s, s]],
+            [0.0, 0.0, 1.0],
+        ),
         // South (-Z)
-        (Face::South, [[s, -s, -s], [s, s, -s], [-s, s, -s], [-s, -s, -s]], [0.0, 0.0, -1.0]),
+        (
+            Face::South,
+            [[s, -s, -s], [s, s, -s], [-s, s, -s], [-s, -s, -s]],
+            [0.0, 0.0, -1.0],
+        ),
         // East (+X)
-        (Face::East, [[s, -s, s], [s, s, s], [s, s, -s], [s, -s, -s]], [1.0, 0.0, 0.0]),
+        (
+            Face::East,
+            [[s, -s, s], [s, s, s], [s, s, -s], [s, -s, -s]],
+            [1.0, 0.0, 0.0],
+        ),
         // West (-X)
-        (Face::West, [[-s, -s, -s], [-s, s, -s], [-s, s, s], [-s, -s, s]], [-1.0, 0.0, 0.0]),
+        (
+            Face::West,
+            [[-s, -s, -s], [-s, s, -s], [-s, s, s], [-s, -s, s]],
+            [-1.0, 0.0, 0.0],
+        ),
     ];
 
     let mut positions = Vec::with_capacity(24);
@@ -208,11 +238,14 @@ fn block_item_mesh(block: BlockType) -> Mesh {
         indices.extend_from_slice(&[idx, idx + 1, idx + 2, idx, idx + 2, idx + 3]);
     }
 
-    Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::default())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
-        .with_inserted_indices(Indices::U32(indices))
+    Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::default(),
+    )
+    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
+    .with_inserted_indices(Indices::U32(indices))
 }
 
 /// Spawn a dropped item entity at the given world position.
@@ -258,11 +291,7 @@ pub fn spawn_dropped_item(
 pub fn dropped_item_physics(
     time: Res<Time>,
     store: Res<crate::world::manager::ChunkDataStore>,
-    mut items: Query<(
-        &mut Transform,
-        &mut ItemVelocity,
-        &mut ItemOnGround,
-    ), With<DroppedItem>>,
+    mut items: Query<(&mut Transform, &mut ItemVelocity, &mut ItemOnGround), With<DroppedItem>>,
 ) {
     let dt = time.delta_secs();
     let half = ITEM_SIZE / 2.0;
@@ -343,10 +372,7 @@ fn is_block_solid(store: &crate::world::manager::ChunkDataStore, x: i32, y: i32,
 }
 
 /// Rotate dropped items slowly for visual appeal.
-pub fn dropped_item_bob(
-    time: Res<Time>,
-    mut items: Query<&mut Transform, With<DroppedItem>>,
-) {
+pub fn dropped_item_bob(time: Res<Time>, mut items: Query<&mut Transform, With<DroppedItem>>) {
     let t = time.elapsed_secs();
     for mut transform in &mut items {
         // Slow spin

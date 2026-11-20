@@ -41,7 +41,13 @@ pub fn toggle_pause(
 
     // Don't toggle pause when main menu, inventory, furnace, or death screen is open,
     // or when the DeepSeek console consumed this Escape press.
-    if in_menu.0 || inventory_open.0 || furnace_open.0.is_some() || dead.0 || console.open || console.just_closed {
+    if in_menu.0
+        || inventory_open.0
+        || furnace_open.0.is_some()
+        || dead.0
+        || console.open
+        || console.just_closed
+    {
         return;
     }
 

@@ -8,11 +8,16 @@ use crate::inventory::chest::ChestStore;
 use crate::inventory::crafting::{CraftingGrid, CraftingTableGrid};
 use crate::inventory::furnace::Furnaces;
 use crate::inventory::inventory::Inventory;
-use crate::player::{Player, SpawnPoint, Health, AirSupply, Velocity, OnGround, FallTracker, PlayerYaw, PlayerPitch, ArmorSlots, Hunger};
+use crate::player::{
+    AirSupply, ArmorSlots, FallTracker, Health, Hunger, OnGround, Player, PlayerPitch, PlayerYaw,
+    SpawnPoint, Velocity,
+};
 use crate::ui::inventory_screen::CursorItem;
 use crate::world::WorldSeed;
 use crate::world::generation::set_world_seed;
-use crate::world::manager::{ChunkManager, ChunkDataStore, ChunkCoord, SaplingTracker, CropTracker};
+use crate::world::manager::{
+    ChunkCoord, ChunkDataStore, ChunkManager, CropTracker, SaplingTracker,
+};
 
 #[derive(Resource)]
 pub struct InMainMenu(pub bool);
@@ -127,7 +132,21 @@ pub fn main_menu_interaction(
     mut chunk_store: ResMut<ChunkDataStore>,
     mut commands: Commands,
     despawn_entities: Query<Entity, Or<(With<ChunkCoord>, With<Mob>)>>,
-    mut player_q: Query<(&mut Transform, &mut Velocity, &mut OnGround, &mut FallTracker, &mut Health, &mut AirSupply, &mut PlayerYaw, &mut PlayerPitch, &mut ArmorSlots, &mut Hunger), With<Player>>,
+    mut player_q: Query<
+        (
+            &mut Transform,
+            &mut Velocity,
+            &mut OnGround,
+            &mut FallTracker,
+            &mut Health,
+            &mut AirSupply,
+            &mut PlayerYaw,
+            &mut PlayerPitch,
+            &mut ArmorSlots,
+            &mut Hunger,
+        ),
+        With<Player>,
+    >,
     mut spawn_point: ResMut<SpawnPoint>,
     mut reset_resources: (
         ResMut<Inventory>,
@@ -186,7 +205,19 @@ pub fn main_menu_interaction(
                 // Reset player to default spawn — use actual terrain height
                 let terrain_y = crate::world::generation::sample_terrain_height(0, 0);
                 *spawn_point = SpawnPoint(Vec3::new(0.0, (terrain_y + 1) as f32, 0.0));
-                if let Ok((mut transform, mut vel, mut on_ground, mut fall, mut health, mut air, mut yaw, mut pitch, mut armor, mut hunger)) = player_q.single_mut() {
+                if let Ok((
+                    mut transform,
+                    mut vel,
+                    mut on_ground,
+                    mut fall,
+                    mut health,
+                    mut air,
+                    mut yaw,
+                    mut pitch,
+                    mut armor,
+                    mut hunger,
+                )) = player_q.single_mut()
+                {
                     transform.translation = spawn_point.0;
                     *vel = Velocity::default();
                     on_ground.0 = false;

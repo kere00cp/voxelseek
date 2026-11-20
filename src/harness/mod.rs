@@ -31,19 +31,19 @@ impl Plugin for HarnessPlugin {
             tx,
             rx: std::sync::Mutex::new(rx),
         })
-            .init_resource::<HarnessConsole>()
-            .init_resource::<HarnessHistory>()
-            .init_resource::<HarnessConfig>()
-            .add_systems(Startup, console::setup_console_ui)
-            .add_systems(
-                Update,
-                (
-                    (console::toggle_console, console::console_keyboard_input).chain(),
-                    console::update_console_ui,
-                    console::poll_network,
-                ),
-            )
-            .add_systems(Last, console::clear_frame_flags);
+        .init_resource::<HarnessConsole>()
+        .init_resource::<HarnessHistory>()
+        .init_resource::<HarnessConfig>()
+        .add_systems(Startup, console::setup_console_ui)
+        .add_systems(
+            Update,
+            (
+                (console::toggle_console, console::console_keyboard_input).chain(),
+                console::update_console_ui,
+                console::poll_network,
+            ),
+        )
+        .add_systems(Last, console::clear_frame_flags);
     }
 }
 
@@ -56,16 +56,28 @@ pub struct ChatLine {
 
 impl ChatLine {
     pub fn user(text: impl Into<String>) -> Self {
-        Self { role: "You", text: text.into() }
+        Self {
+            role: "You",
+            text: text.into(),
+        }
     }
     pub fn assistant(text: impl Into<String>) -> Self {
-        Self { role: "DeepSeek", text: text.into() }
+        Self {
+            role: "DeepSeek",
+            text: text.into(),
+        }
     }
     pub fn system(text: impl Into<String>) -> Self {
-        Self { role: "System", text: text.into() }
+        Self {
+            role: "System",
+            text: text.into(),
+        }
     }
     pub fn tool(text: impl Into<String>) -> Self {
-        Self { role: "Tool", text: text.into() }
+        Self {
+            role: "Tool",
+            text: text.into(),
+        }
     }
 }
 

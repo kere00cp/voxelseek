@@ -5,8 +5,8 @@ pub mod manager;
 pub mod material;
 pub mod meshing;
 
-use bevy::prelude::*;
 use bevy::pbr::MaterialPlugin;
+use bevy::prelude::*;
 
 /// Resource holding the world seed. Changing this and clearing chunks triggers a new world.
 #[derive(Resource)]

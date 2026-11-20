@@ -1,6 +1,8 @@
 pub mod atlas;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default, serde::Serialize, serde::Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Hash, Default, serde::Serialize, serde::Deserialize,
+)]
 #[repr(u8)]
 pub enum BlockType {
     #[default]
@@ -152,8 +154,14 @@ impl BlockType {
     pub fn is_non_cube(self) -> bool {
         matches!(
             self,
-            Self::Torch | Self::TallGrass | Self::OakSapling | Self::BirchSapling
-            | Self::WheatStage0 | Self::WheatStage1 | Self::WheatStage2 | Self::WheatStage3
+            Self::Torch
+                | Self::TallGrass
+                | Self::OakSapling
+                | Self::BirchSapling
+                | Self::WheatStage0
+                | Self::WheatStage1
+                | Self::WheatStage2
+                | Self::WheatStage3
         )
     }
 
@@ -206,7 +214,9 @@ impl BlockType {
             Self::OakSapling => "Oak Sapling",
             Self::BirchSapling => "Birch Sapling",
             Self::Farmland => "Farmland",
-            Self::WheatStage0 | Self::WheatStage1 | Self::WheatStage2 | Self::WheatStage3 => "Wheat",
+            Self::WheatStage0 | Self::WheatStage1 | Self::WheatStage2 | Self::WheatStage3 => {
+                "Wheat"
+            }
         }
     }
 
@@ -286,16 +296,27 @@ impl BlockType {
     pub fn break_time(self) -> f32 {
         match self {
             Self::Air | Self::Water => 0.0,
-            Self::TallGrass | Self::Torch | Self::OakSapling | Self::BirchSapling
-            | Self::WheatStage0 | Self::WheatStage1 | Self::WheatStage2 | Self::WheatStage3 => 0.0, // instant break
+            Self::TallGrass
+            | Self::Torch
+            | Self::OakSapling
+            | Self::BirchSapling
+            | Self::WheatStage0
+            | Self::WheatStage1
+            | Self::WheatStage2
+            | Self::WheatStage3 => 0.0, // instant break
             Self::OakLeaves | Self::BirchLeaves => 0.3,
             Self::Glass => 0.45,
             Self::Dirt | Self::Sand | Self::Farmland => 0.75,
             Self::Gravel | Self::Clay => 0.9,
             Self::Snow => 0.3,
             Self::Grass => 0.9,
-            Self::OakLog | Self::BirchLog | Self::Planks
-            | Self::DoorBottom | Self::DoorTop | Self::DoorBottomOpen | Self::DoorTopOpen => 3.0,
+            Self::OakLog
+            | Self::BirchLog
+            | Self::Planks
+            | Self::DoorBottom
+            | Self::DoorTop
+            | Self::DoorBottomOpen
+            | Self::DoorTopOpen => 3.0,
             Self::CraftingTable => 3.75,
             Self::Sandstone => 4.0,
             Self::Stone => 7.5,
@@ -455,7 +476,14 @@ mod tests {
 
     #[test]
     fn face_normals_unit_length() {
-        for face in [Face::Top, Face::Bottom, Face::North, Face::South, Face::East, Face::West] {
+        for face in [
+            Face::Top,
+            Face::Bottom,
+            Face::North,
+            Face::South,
+            Face::East,
+            Face::West,
+        ] {
             let n = face.normal();
             let len = (n[0] * n[0] + n[1] * n[1] + n[2] * n[2]).sqrt();
             assert!((len - 1.0).abs() < 0.001);

@@ -13,7 +13,7 @@ pub struct DayNightCycle {
 impl Default for DayNightCycle {
     fn default() -> Self {
         Self {
-            time_of_day: 0.25, // Start at noon
+            time_of_day: 0.25,      // Start at noon
             cycle_duration: 1200.0, // 20 minutes (similar to Minecraft)
         }
     }
@@ -70,10 +70,7 @@ pub fn update_sun(
     light.color = Color::srgb(r, g, b);
 }
 
-pub fn update_ambient(
-    cycle: Res<DayNightCycle>,
-    mut ambient: ResMut<GlobalAmbientLight>,
-) {
+pub fn update_ambient(cycle: Res<DayNightCycle>, mut ambient: ResMut<GlobalAmbientLight>) {
     let angle = cycle.time_of_day * std::f32::consts::TAU;
     let sun_height = angle.sin();
 

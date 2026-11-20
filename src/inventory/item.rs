@@ -79,14 +79,38 @@ pub enum ToolTier {
 impl Item {
     pub fn max_stack(self) -> u8 {
         match self {
-            Self::WoodenPickaxe | Self::WoodenAxe | Self::WoodenShovel | Self::WoodenSword
-            | Self::StonePickaxe | Self::StoneAxe | Self::StoneShovel | Self::StoneSword
-            | Self::IronPickaxe | Self::IronAxe | Self::IronShovel | Self::IronSword
-            | Self::DiamondPickaxe | Self::DiamondAxe | Self::DiamondShovel | Self::DiamondSword
-            | Self::WoodenHoe | Self::StoneHoe | Self::IronHoe | Self::DiamondHoe
-            | Self::LeatherHelmet | Self::LeatherChestplate | Self::LeatherLeggings | Self::LeatherBoots
-            | Self::IronHelmet | Self::IronChestplate | Self::IronLeggings | Self::IronBoots
-            | Self::DiamondHelmet | Self::DiamondChestplate | Self::DiamondLeggings | Self::DiamondBoots => 1,
+            Self::WoodenPickaxe
+            | Self::WoodenAxe
+            | Self::WoodenShovel
+            | Self::WoodenSword
+            | Self::StonePickaxe
+            | Self::StoneAxe
+            | Self::StoneShovel
+            | Self::StoneSword
+            | Self::IronPickaxe
+            | Self::IronAxe
+            | Self::IronShovel
+            | Self::IronSword
+            | Self::DiamondPickaxe
+            | Self::DiamondAxe
+            | Self::DiamondShovel
+            | Self::DiamondSword
+            | Self::WoodenHoe
+            | Self::StoneHoe
+            | Self::IronHoe
+            | Self::DiamondHoe
+            | Self::LeatherHelmet
+            | Self::LeatherChestplate
+            | Self::LeatherLeggings
+            | Self::LeatherBoots
+            | Self::IronHelmet
+            | Self::IronChestplate
+            | Self::IronLeggings
+            | Self::IronBoots
+            | Self::DiamondHelmet
+            | Self::DiamondChestplate
+            | Self::DiamondLeggings
+            | Self::DiamondBoots => 1,
             _ => 64,
         }
     }
@@ -165,29 +189,47 @@ impl Item {
 
     pub fn tool_kind(self) -> Option<ToolKind> {
         match self {
-            Self::WoodenPickaxe | Self::StonePickaxe | Self::IronPickaxe | Self::DiamondPickaxe => Some(ToolKind::Pickaxe),
-            Self::WoodenAxe | Self::StoneAxe | Self::IronAxe | Self::DiamondAxe => Some(ToolKind::Axe),
-            Self::WoodenShovel | Self::StoneShovel | Self::IronShovel | Self::DiamondShovel => Some(ToolKind::Shovel),
-            Self::WoodenSword | Self::StoneSword | Self::IronSword | Self::DiamondSword => Some(ToolKind::Sword),
-            Self::WoodenHoe | Self::StoneHoe | Self::IronHoe | Self::DiamondHoe => Some(ToolKind::Hoe),
+            Self::WoodenPickaxe | Self::StonePickaxe | Self::IronPickaxe | Self::DiamondPickaxe => {
+                Some(ToolKind::Pickaxe)
+            }
+            Self::WoodenAxe | Self::StoneAxe | Self::IronAxe | Self::DiamondAxe => {
+                Some(ToolKind::Axe)
+            }
+            Self::WoodenShovel | Self::StoneShovel | Self::IronShovel | Self::DiamondShovel => {
+                Some(ToolKind::Shovel)
+            }
+            Self::WoodenSword | Self::StoneSword | Self::IronSword | Self::DiamondSword => {
+                Some(ToolKind::Sword)
+            }
+            Self::WoodenHoe | Self::StoneHoe | Self::IronHoe | Self::DiamondHoe => {
+                Some(ToolKind::Hoe)
+            }
             _ => None,
         }
     }
 
     pub fn tool_tier(self) -> Option<ToolTier> {
         match self {
-            Self::WoodenPickaxe | Self::WoodenAxe | Self::WoodenShovel | Self::WoodenSword | Self::WoodenHoe => {
-                Some(ToolTier::Wooden)
-            }
-            Self::StonePickaxe | Self::StoneAxe | Self::StoneShovel | Self::StoneSword | Self::StoneHoe => {
-                Some(ToolTier::Stone)
-            }
-            Self::IronPickaxe | Self::IronAxe | Self::IronShovel | Self::IronSword | Self::IronHoe => {
-                Some(ToolTier::Iron)
-            }
-            Self::DiamondPickaxe | Self::DiamondAxe | Self::DiamondShovel | Self::DiamondSword | Self::DiamondHoe => {
-                Some(ToolTier::Diamond)
-            }
+            Self::WoodenPickaxe
+            | Self::WoodenAxe
+            | Self::WoodenShovel
+            | Self::WoodenSword
+            | Self::WoodenHoe => Some(ToolTier::Wooden),
+            Self::StonePickaxe
+            | Self::StoneAxe
+            | Self::StoneShovel
+            | Self::StoneSword
+            | Self::StoneHoe => Some(ToolTier::Stone),
+            Self::IronPickaxe
+            | Self::IronAxe
+            | Self::IronShovel
+            | Self::IronSword
+            | Self::IronHoe => Some(ToolTier::Iron),
+            Self::DiamondPickaxe
+            | Self::DiamondAxe
+            | Self::DiamondShovel
+            | Self::DiamondSword
+            | Self::DiamondHoe => Some(ToolTier::Diamond),
             _ => None,
         }
     }
@@ -247,9 +289,18 @@ impl Item {
     /// Returns the defense points for this armor piece (0 if not armor).
     pub fn armor_points(self) -> u8 {
         match self {
-            Self::LeatherHelmet => 1, Self::LeatherChestplate => 3, Self::LeatherLeggings => 2, Self::LeatherBoots => 1,
-            Self::IronHelmet => 2, Self::IronChestplate => 6, Self::IronLeggings => 5, Self::IronBoots => 2,
-            Self::DiamondHelmet => 3, Self::DiamondChestplate => 8, Self::DiamondLeggings => 6, Self::DiamondBoots => 3,
+            Self::LeatherHelmet => 1,
+            Self::LeatherChestplate => 3,
+            Self::LeatherLeggings => 2,
+            Self::LeatherBoots => 1,
+            Self::IronHelmet => 2,
+            Self::IronChestplate => 6,
+            Self::IronLeggings => 5,
+            Self::IronBoots => 2,
+            Self::DiamondHelmet => 3,
+            Self::DiamondChestplate => 8,
+            Self::DiamondLeggings => 6,
+            Self::DiamondBoots => 3,
             _ => 0,
         }
     }
@@ -257,12 +308,18 @@ impl Item {
     /// Returns the max durability for armor pieces.
     pub fn armor_durability(self) -> Option<u16> {
         match self {
-            Self::LeatherHelmet => Some(55), Self::LeatherChestplate => Some(80),
-            Self::LeatherLeggings => Some(75), Self::LeatherBoots => Some(65),
-            Self::IronHelmet => Some(165), Self::IronChestplate => Some(240),
-            Self::IronLeggings => Some(225), Self::IronBoots => Some(195),
-            Self::DiamondHelmet => Some(363), Self::DiamondChestplate => Some(528),
-            Self::DiamondLeggings => Some(495), Self::DiamondBoots => Some(429),
+            Self::LeatherHelmet => Some(55),
+            Self::LeatherChestplate => Some(80),
+            Self::LeatherLeggings => Some(75),
+            Self::LeatherBoots => Some(65),
+            Self::IronHelmet => Some(165),
+            Self::IronChestplate => Some(240),
+            Self::IronLeggings => Some(225),
+            Self::IronBoots => Some(195),
+            Self::DiamondHelmet => Some(363),
+            Self::DiamondChestplate => Some(528),
+            Self::DiamondLeggings => Some(495),
+            Self::DiamondBoots => Some(429),
             _ => None,
         }
     }

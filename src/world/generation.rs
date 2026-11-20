@@ -1,8 +1,8 @@
+use super::chunk::{CHUNK_SIZE, Chunk};
+use crate::block::BlockType;
 use bevy::prelude::*;
 use noise::{Fbm, MultiFractal, NoiseFn, Perlin, SuperSimplex};
 use std::sync::RwLock;
-use super::chunk::{Chunk, CHUNK_SIZE};
-use crate::block::BlockType;
 
 const DEFAULT_SEED: u32 = 42;
 const SEA_LEVEL: i32 = 63;
@@ -134,8 +134,10 @@ impl TerrainNoise {
     /// Returns a temperature value in roughly [-1, 1].
     /// Positive = warm (desert), negative = cool (plains).
     fn sample_biome_temp(&self, world_x: i32, world_z: i32) -> f64 {
-        self.biome_temp
-            .get([world_x as f64 * BIOME_FREQUENCY, world_z as f64 * BIOME_FREQUENCY])
+        self.biome_temp.get([
+            world_x as f64 * BIOME_FREQUENCY,
+            world_z as f64 * BIOME_FREQUENCY,
+        ])
     }
 
     /// Returns true if this position should be carved out as a cave.
@@ -178,11 +180,9 @@ impl TerrainNoise {
 
     /// Returns true if gravel should replace stone at this underground position.
     fn is_gravel(&self, wx: i32, wy: i32, wz: i32) -> bool {
-        let val = self.gravel.get([
-            wx as f64 * 0.05,
-            wy as f64 * 0.05,
-            wz as f64 * 0.05,
-        ]);
+        let val = self
+            .gravel
+            .get([wx as f64 * 0.05, wy as f64 * 0.05, wz as f64 * 0.05]);
         val > 0.7
     }
 
@@ -199,11 +199,7 @@ impl TerrainNoise {
 
     /// Ore noise sample for a given position and ore-specific index (0-3).
     fn ore_density(&self, wx: i32, wy: i32, wz: i32, index: usize) -> f64 {
-        self.ore_noises[index].get([
-            wx as f64 * 0.1,
-            wy as f64 * 0.1,
-            wz as f64 * 0.1,
-        ])
+        self.ore_noises[index].get([wx as f64 * 0.1, wy as f64 * 0.1, wz as f64 * 0.1])
     }
 }
 
@@ -508,11 +504,7 @@ fn place_trees(
                         }
                         let lx = x as i32 + dx;
                         let lz = z as i32 + dz;
-                        if lx < 0
-                            || lx >= CHUNK_SIZE as i32
-                            || lz < 0
-                            || lz >= CHUNK_SIZE as i32
-                        {
+                        if lx < 0 || lx >= CHUNK_SIZE as i32 || lz < 0 || lz >= CHUNK_SIZE as i32 {
                             continue;
                         }
                         // Don't overwrite trunk

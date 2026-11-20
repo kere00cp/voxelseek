@@ -19,7 +19,7 @@ pub struct UiOpenState<'w> {
 use crate::inventory::chest::{ChestOpen, ChestStore};
 use crate::inventory::crafting::CraftingTableOpen;
 use crate::inventory::furnace::{FurnaceOpen, Furnaces};
-use crate::inventory::inventory::{Inventory, INVENTORY_COLS, INVENTORY_SLOTS};
+use crate::inventory::inventory::{INVENTORY_COLS, INVENTORY_SLOTS, Inventory};
 use crate::inventory::item::{Item, ToolKind, ToolTier};
 use crate::ui::hotbar::HotbarState;
 use crate::ui::inventory_screen::InventoryOpen;
@@ -27,7 +27,7 @@ use crate::world::chunk::CHUNK_SIZE;
 use crate::world::coordinates::{world_to_chunk_pos, world_to_local_pos};
 use crate::world::manager::{ChunkDataStore, ChunkManager, NeedsMesh};
 
-use super::{Player, Hunger, PendingExhaustion};
+use super::{Hunger, PendingExhaustion, Player};
 
 /// Flag set by furnace_interact to prevent place_block from also firing on the same right-click.
 #[derive(Resource, Default)]
@@ -102,7 +102,10 @@ pub fn setup_break_overlay(
             ..default()
         })
     });
-    commands.insert_resource(BreakOverlayAssets { materials: mats, mesh });
+    commands.insert_resource(BreakOverlayAssets {
+        materials: mats,
+        mesh,
+    });
 }
 
 const REACH_DISTANCE: f32 = 5.0;
@@ -118,17 +121,38 @@ fn tool_speed_multiplier(held: Item, block: BlockType) -> f32 {
 
     // Check if this tool type is effective on this block
     let is_effective = match kind {
-        Some(ToolKind::Pickaxe) => matches!(block,
-            BlockType::Stone | BlockType::Cobblestone | BlockType::Sandstone
-            | BlockType::CoalOre | BlockType::IronOre | BlockType::GoldOre
-            | BlockType::DiamondOre | BlockType::Furnace),
-        Some(ToolKind::Axe) => matches!(block,
-            BlockType::OakLog | BlockType::BirchLog | BlockType::Planks
-            | BlockType::CraftingTable | BlockType::DoorBottom | BlockType::DoorTop
-            | BlockType::DoorBottomOpen | BlockType::DoorTopOpen),
-        Some(ToolKind::Shovel) => matches!(block,
-            BlockType::Dirt | BlockType::Grass | BlockType::Sand
-            | BlockType::Gravel | BlockType::Clay | BlockType::Snow | BlockType::Farmland),
+        Some(ToolKind::Pickaxe) => matches!(
+            block,
+            BlockType::Stone
+                | BlockType::Cobblestone
+                | BlockType::Sandstone
+                | BlockType::CoalOre
+                | BlockType::IronOre
+                | BlockType::GoldOre
+                | BlockType::DiamondOre
+                | BlockType::Furnace
+        ),
+        Some(ToolKind::Axe) => matches!(
+            block,
+            BlockType::OakLog
+                | BlockType::BirchLog
+                | BlockType::Planks
+                | BlockType::CraftingTable
+                | BlockType::DoorBottom
+                | BlockType::DoorTop
+                | BlockType::DoorBottomOpen
+                | BlockType::DoorTopOpen
+        ),
+        Some(ToolKind::Shovel) => matches!(
+            block,
+            BlockType::Dirt
+                | BlockType::Grass
+                | BlockType::Sand
+                | BlockType::Gravel
+                | BlockType::Clay
+                | BlockType::Snow
+                | BlockType::Farmland
+        ),
         _ => false,
     };
 
@@ -171,7 +195,12 @@ struct RaycastHit {
 }
 
 /// DDA raycast through a voxel grid. Returns the first solid block hit within max_dist.
-fn voxel_raycast(origin: Vec3, direction: Vec3, max_dist: f32, store: &ChunkDataStore) -> Option<RaycastHit> {
+fn voxel_raycast(
+    origin: Vec3,
+    direction: Vec3,
+    max_dist: f32,
+    store: &ChunkDataStore,
+) -> Option<RaycastHit> {
     let dir = direction.normalize();
 
     // Current voxel position
@@ -185,9 +214,21 @@ fn voxel_raycast(origin: Vec3, direction: Vec3, max_dist: f32, store: &ChunkData
     let step_z = if dir.z >= 0.0 { 1_i32 } else { -1 };
 
     // Distance along ray to cross one voxel boundary in each axis
-    let t_delta_x = if dir.x != 0.0 { (1.0 / dir.x).abs() } else { f32::MAX };
-    let t_delta_y = if dir.y != 0.0 { (1.0 / dir.y).abs() } else { f32::MAX };
-    let t_delta_z = if dir.z != 0.0 { (1.0 / dir.z).abs() } else { f32::MAX };
+    let t_delta_x = if dir.x != 0.0 {
+        (1.0 / dir.x).abs()
+    } else {
+        f32::MAX
+    };
+    let t_delta_y = if dir.y != 0.0 {
+        (1.0 / dir.y).abs()
+    } else {
+        f32::MAX
+    };
+    let t_delta_z = if dir.z != 0.0 {
+        (1.0 / dir.z).abs()
+    } else {
+        f32::MAX
+    };
 
     // Distance along ray to the next voxel boundary for each axis
     let mut t_max_x = if dir.x != 0.0 {
@@ -340,17 +381,15 @@ fn handle_chest_break(
 /// Returns the attack damage for the held item.
 fn weapon_damage(held: Item) -> f32 {
     match held.tool_kind() {
-        Some(ToolKind::Sword) => {
-            match held.tool_tier() {
-                Some(ToolTier::Wooden) => 4.0,
-                Some(ToolTier::Stone) => 5.0,
-                Some(ToolTier::Iron) => 6.0,
-                Some(ToolTier::Diamond) => 7.0,
-                _ => 4.0,
-            }
-        }
+        Some(ToolKind::Sword) => match held.tool_tier() {
+            Some(ToolTier::Wooden) => 4.0,
+            Some(ToolTier::Stone) => 5.0,
+            Some(ToolTier::Iron) => 6.0,
+            Some(ToolTier::Diamond) => 7.0,
+            _ => 4.0,
+        },
         Some(_) => 2.0, // other tools used as weapons
-        None => 1.0,     // bare hand / non-tool item
+        None => 1.0,    // bare hand / non-tool item
     }
 }
 
@@ -407,7 +446,9 @@ pub fn attack_mob(
     if inventory_open.0 {
         return;
     }
-    let Ok(cursor) = cursor_q.single() else { return };
+    let Ok(cursor) = cursor_q.single() else {
+        return;
+    };
     if cursor.visible {
         return;
     }
@@ -415,16 +456,17 @@ pub fn attack_mob(
         return;
     }
 
-    let Ok(cam_global) = camera_q.single() else { return };
+    let Ok(cam_global) = camera_q.single() else {
+        return;
+    };
     let origin = cam_global.translation();
     let forward = cam_global.forward().as_vec3();
 
     // Find the closest block hit distance for comparison
-    let block_dist = voxel_raycast(origin, forward, REACH_DISTANCE, &store)
-        .map(|hit| {
-            let block_center = hit.block_pos.as_vec3() + Vec3::splat(0.5);
-            origin.distance(block_center)
-        });
+    let block_dist = voxel_raycast(origin, forward, REACH_DISTANCE, &store).map(|hit| {
+        let block_center = hit.block_pos.as_vec3() + Vec3::splat(0.5);
+        origin.distance(block_center)
+    });
 
     // Find the closest mob hit
     let mut closest_mob: Option<(Entity, f32)> = None;
@@ -464,7 +506,9 @@ pub fn attack_mob(
     let held_item = hotbar.slots[hotbar.selected_slot];
     let damage = weapon_damage(held_item);
 
-    let Ok(player_transform) = player_q.single() else { return };
+    let Ok(player_transform) = player_q.single() else {
+        return;
+    };
     let player_pos = player_transform.translation;
 
     swing_audio.write(crate::audio::SwordSwingAudio);
@@ -513,8 +557,18 @@ pub fn break_block(
     hotbar: Res<HotbarState>,
     mut commands: Commands,
     mut audio: bevy::ecs::message::MessageWriter<crate::audio::BlockBreakAudio>,
-    (mut furnaces, mut furnace_open, mut chest_store, mut chest_open): (ResMut<Furnaces>, ResMut<FurnaceOpen>, ResMut<ChestStore>, ResMut<ChestOpen>),
-    (mut breaking, mut pending_exhaustion, drop_assets, mut broken_msg): (ResMut<BreakingState>, ResMut<PendingExhaustion>, Res<crate::entity::dropped_item::DroppedItemAssets>, bevy::ecs::message::MessageWriter<crate::mods::BlockBrokenMsg>),
+    (mut furnaces, mut furnace_open, mut chest_store, mut chest_open): (
+        ResMut<Furnaces>,
+        ResMut<FurnaceOpen>,
+        ResMut<ChestStore>,
+        ResMut<ChestOpen>,
+    ),
+    (mut breaking, mut pending_exhaustion, drop_assets, mut broken_msg): (
+        ResMut<BreakingState>,
+        ResMut<PendingExhaustion>,
+        Res<crate::entity::dropped_item::DroppedItemAssets>,
+        bevy::ecs::message::MessageWriter<crate::mods::BlockBrokenMsg>,
+    ),
     overlay_assets: Res<BreakOverlayAssets>,
     mut meshes: ResMut<Assets<Mesh>>,
 ) {
@@ -571,19 +625,48 @@ pub fn break_block(
             commands.entity(entity).despawn();
         }
 
-        handle_furnace_break(block, &hit.block_pos, &mut furnaces, &mut furnace_open, &mut inventory);
-        handle_chest_break(block, &hit.block_pos, &mut chest_store, &mut chest_open, &mut inventory);
+        handle_furnace_break(
+            block,
+            &hit.block_pos,
+            &mut furnaces,
+            &mut furnace_open,
+            &mut inventory,
+        );
+        handle_chest_break(
+            block,
+            &hit.block_pos,
+            &mut chest_store,
+            &mut chest_open,
+            &mut inventory,
+        );
         handle_door_break(block, &hit.block_pos, &mut store, &manager, &mut commands);
 
         set_block(&mut store, hit.block_pos, BlockType::Air);
-        broken_msg.write(crate::mods::BlockBrokenMsg { pos: hit.block_pos, block });
+        broken_msg.write(crate::mods::BlockBrokenMsg {
+            pos: hit.block_pos,
+            block,
+        });
         if can_harvest(held_item, block) {
             let drop_pos = hit.block_pos.as_vec3() + Vec3::splat(0.5);
             if let Some(drop) = block.drop_item() {
-                crate::entity::dropped_item::spawn_dropped_item(&mut commands, &mut meshes, &drop_assets, drop, 1, drop_pos);
+                crate::entity::dropped_item::spawn_dropped_item(
+                    &mut commands,
+                    &mut meshes,
+                    &drop_assets,
+                    drop,
+                    1,
+                    drop_pos,
+                );
             }
             for (bonus_item, bonus_count) in block.bonus_drops() {
-                crate::entity::dropped_item::spawn_dropped_item(&mut commands, &mut meshes, &drop_assets, bonus_item, bonus_count, drop_pos);
+                crate::entity::dropped_item::spawn_dropped_item(
+                    &mut commands,
+                    &mut meshes,
+                    &drop_assets,
+                    bonus_item,
+                    bonus_count,
+                    drop_pos,
+                );
             }
         }
         // Use tool durability
@@ -609,11 +692,13 @@ pub fn break_block(
         breaking.last_stage = 0;
 
         let overlay_pos = hit.block_pos.as_vec3() + Vec3::splat(0.5);
-        let entity = commands.spawn((
-            Mesh3d(overlay_assets.mesh.clone()),
-            MeshMaterial3d(overlay_assets.materials[0].clone()),
-            Transform::from_translation(overlay_pos),
-        )).id();
+        let entity = commands
+            .spawn((
+                Mesh3d(overlay_assets.mesh.clone()),
+                MeshMaterial3d(overlay_assets.materials[0].clone()),
+                Transform::from_translation(overlay_pos),
+            ))
+            .id();
         breaking.overlay_entity = Some(entity);
     }
 
@@ -624,7 +709,9 @@ pub fn break_block(
     let stage = ((breaking.progress * 10.0).floor() as usize).min(9);
     if stage != breaking.last_stage {
         if let Some(entity) = breaking.overlay_entity {
-            commands.entity(entity).insert(MeshMaterial3d(overlay_assets.materials[stage].clone()));
+            commands
+                .entity(entity)
+                .insert(MeshMaterial3d(overlay_assets.materials[stage].clone()));
         }
         breaking.last_stage = stage;
     }
@@ -638,20 +725,55 @@ pub fn break_block(
             commands.entity(entity).despawn();
         }
 
-        handle_furnace_break(target_block, &target_pos, &mut furnaces, &mut furnace_open, &mut inventory);
-        handle_chest_break(target_block, &target_pos, &mut chest_store, &mut chest_open, &mut inventory);
-        handle_door_break(target_block, &target_pos, &mut store, &manager, &mut commands);
+        handle_furnace_break(
+            target_block,
+            &target_pos,
+            &mut furnaces,
+            &mut furnace_open,
+            &mut inventory,
+        );
+        handle_chest_break(
+            target_block,
+            &target_pos,
+            &mut chest_store,
+            &mut chest_open,
+            &mut inventory,
+        );
+        handle_door_break(
+            target_block,
+            &target_pos,
+            &mut store,
+            &manager,
+            &mut commands,
+        );
 
         set_block(&mut store, target_pos, BlockType::Air);
-        broken_msg.write(crate::mods::BlockBrokenMsg { pos: target_pos, block: target_block });
+        broken_msg.write(crate::mods::BlockBrokenMsg {
+            pos: target_pos,
+            block: target_block,
+        });
         // Check tool requirements for drops
         if can_harvest(held_item, target_block) {
             let drop_pos = target_pos.as_vec3() + Vec3::splat(0.5);
             if let Some(drop) = target_block.drop_item() {
-                crate::entity::dropped_item::spawn_dropped_item(&mut commands, &mut meshes, &drop_assets, drop, 1, drop_pos);
+                crate::entity::dropped_item::spawn_dropped_item(
+                    &mut commands,
+                    &mut meshes,
+                    &drop_assets,
+                    drop,
+                    1,
+                    drop_pos,
+                );
             }
             for (bonus_item, bonus_count) in target_block.bonus_drops() {
-                crate::entity::dropped_item::spawn_dropped_item(&mut commands, &mut meshes, &drop_assets, bonus_item, bonus_count, drop_pos);
+                crate::entity::dropped_item::spawn_dropped_item(
+                    &mut commands,
+                    &mut meshes,
+                    &drop_assets,
+                    bonus_item,
+                    bonus_count,
+                    drop_pos,
+                );
             }
         }
         // Use tool durability
@@ -730,10 +852,24 @@ pub fn place_block(
     if existing != BlockType::Air && existing.is_non_cube() {
         let drop_pos = place_pos.as_vec3() + Vec3::splat(0.5);
         if let Some(drop) = existing.drop_item() {
-            crate::entity::dropped_item::spawn_dropped_item(&mut commands, &mut meshes, &drop_assets, drop, 1, drop_pos);
+            crate::entity::dropped_item::spawn_dropped_item(
+                &mut commands,
+                &mut meshes,
+                &drop_assets,
+                drop,
+                1,
+                drop_pos,
+            );
         }
         for (bonus_item, bonus_count) in existing.bonus_drops() {
-            crate::entity::dropped_item::spawn_dropped_item(&mut commands, &mut meshes, &drop_assets, bonus_item, bonus_count, drop_pos);
+            crate::entity::dropped_item::spawn_dropped_item(
+                &mut commands,
+                &mut meshes,
+                &drop_assets,
+                bonus_item,
+                bonus_count,
+                drop_pos,
+            );
         }
         set_block(&mut store, place_pos, BlockType::Air);
     }
@@ -782,7 +918,10 @@ pub fn place_block(
         set_block(&mut store, place_pos, BlockType::DoorBottom);
         set_block(&mut store, top_pos, BlockType::DoorTop);
         audio.write(crate::audio::BlockPlaceAudio);
-        placed_msg.write(crate::mods::BlockPlacedMsg { pos: place_pos, block: BlockType::DoorBottom });
+        placed_msg.write(crate::mods::BlockPlacedMsg {
+            pos: place_pos,
+            block: BlockType::DoorBottom,
+        });
         mark_needs_remesh(place_pos, &manager, &mut commands);
         mark_needs_remesh(top_pos, &manager, &mut commands);
         return;
@@ -790,12 +929,16 @@ pub fn place_block(
 
     set_block(&mut store, place_pos, block_type);
     audio.write(crate::audio::BlockPlaceAudio);
-    placed_msg.write(crate::mods::BlockPlacedMsg { pos: place_pos, block: block_type });
+    placed_msg.write(crate::mods::BlockPlacedMsg {
+        pos: place_pos,
+        block: block_type,
+    });
 
     // Track placed saplings for growth
     if block_type == BlockType::OakSapling || block_type == BlockType::BirchSapling {
-        use crate::world::manager::{SAPLING_GROW_MIN, SAPLING_GROW_MAX};
-        let timer = SAPLING_GROW_MIN + rand::random::<f32>() * (SAPLING_GROW_MAX - SAPLING_GROW_MIN);
+        use crate::world::manager::{SAPLING_GROW_MAX, SAPLING_GROW_MIN};
+        let timer =
+            SAPLING_GROW_MIN + rand::random::<f32>() * (SAPLING_GROW_MAX - SAPLING_GROW_MIN);
         sapling_tracker.saplings.insert(place_pos, timer);
     }
 
@@ -856,8 +999,10 @@ fn handle_door_break(
     };
     let other_block = get_block(store, other_pos.x, other_pos.y, other_pos.z);
     match other_block {
-        BlockType::DoorBottom | BlockType::DoorTop
-        | BlockType::DoorBottomOpen | BlockType::DoorTopOpen => {
+        BlockType::DoorBottom
+        | BlockType::DoorTop
+        | BlockType::DoorBottomOpen
+        | BlockType::DoorTopOpen => {
             set_block(store, other_pos, BlockType::Air);
             mark_needs_remesh(other_pos, manager, commands);
         }
@@ -874,12 +1019,8 @@ fn toggle_door(
     commands: &mut Commands,
 ) {
     let (bottom_pos, top_pos) = match block {
-        BlockType::DoorBottom | BlockType::DoorBottomOpen => {
-            (pos, pos + IVec3::Y)
-        }
-        BlockType::DoorTop | BlockType::DoorTopOpen => {
-            (pos - IVec3::Y, pos)
-        }
+        BlockType::DoorBottom | BlockType::DoorBottomOpen => (pos, pos + IVec3::Y),
+        BlockType::DoorTop | BlockType::DoorTopOpen => (pos - IVec3::Y, pos),
         _ => return,
     };
 
@@ -930,7 +1071,11 @@ pub fn block_interact(
         return;
     }
 
-    if ui_state.inventory_open.0 || ui_state.furnace_open.0.is_some() || ui_state.crafting_table_open.0 || ui_state.chest_open.0.is_some() {
+    if ui_state.inventory_open.0
+        || ui_state.furnace_open.0.is_some()
+        || ui_state.crafting_table_open.0
+        || ui_state.chest_open.0.is_some()
+    {
         return;
     }
 
@@ -985,15 +1130,16 @@ pub fn block_interact(
                 consumed.0 = true;
             }
         }
-        BlockType::DoorBottom | BlockType::DoorTop
-        | BlockType::DoorBottomOpen | BlockType::DoorTopOpen => {
+        BlockType::DoorBottom
+        | BlockType::DoorTop
+        | BlockType::DoorBottomOpen
+        | BlockType::DoorTopOpen => {
             toggle_door(block, hit.block_pos, &mut store, &manager, &mut commands);
             consumed.0 = true;
         }
         _ => {}
     }
 }
-
 
 /// System: eat food on right-click when holding a food item.
 /// Runs after block_interact (so we don't eat when interacting with furnace/chest).
@@ -1016,12 +1162,16 @@ pub fn eat_food(
     if consumed.0 || inventory_open.0 {
         return;
     }
-    let Ok(cursor) = cursor_q.single() else { return };
+    let Ok(cursor) = cursor_q.single() else {
+        return;
+    };
     if cursor.visible {
         return;
     }
 
-    let Ok(mut hunger) = hunger_q.single_mut() else { return };
+    let Ok(mut hunger) = hunger_q.single_mut() else {
+        return;
+    };
 
     // Check if holding a food item
     let held_item = hotbar.slots[hotbar.selected_slot];
@@ -1073,7 +1223,9 @@ pub fn hoe_interact(
     if consumed.0 || inventory_open.0 {
         return;
     }
-    let Ok(cursor) = cursor_q.single() else { return };
+    let Ok(cursor) = cursor_q.single() else {
+        return;
+    };
     if cursor.visible {
         return;
     }
@@ -1084,7 +1236,9 @@ pub fn hoe_interact(
         return;
     }
 
-    let Ok(cam_global) = camera_q.single() else { return };
+    let Ok(cam_global) = camera_q.single() else {
+        return;
+    };
     let origin = cam_global.translation();
     let forward = cam_global.forward().as_vec3();
 
@@ -1134,7 +1288,9 @@ pub fn plant_seeds(
     if consumed.0 || inventory_open.0 {
         return;
     }
-    let Ok(cursor) = cursor_q.single() else { return };
+    let Ok(cursor) = cursor_q.single() else {
+        return;
+    };
     if cursor.visible {
         return;
     }
@@ -1145,7 +1301,9 @@ pub fn plant_seeds(
         return;
     }
 
-    let Ok(cam_global) = camera_q.single() else { return };
+    let Ok(cam_global) = camera_q.single() else {
+        return;
+    };
     let origin = cam_global.translation();
     let forward = cam_global.forward().as_vec3();
 
@@ -1178,18 +1336,14 @@ pub fn plant_seeds(
     mark_needs_remesh(above_pos, &manager, &mut commands);
 
     // Track crop for growth
-    use crate::world::manager::{CROP_GROW_MIN, CROP_GROW_MAX};
+    use crate::world::manager::{CROP_GROW_MAX, CROP_GROW_MIN};
     let timer = CROP_GROW_MIN + rand::random::<f32>() * (CROP_GROW_MAX - CROP_GROW_MIN);
     crop_tracker.crops.insert(above_pos, timer);
 }
 
 fn block_overlaps_player(block_pos: IVec3, player_pos: Vec3) -> bool {
     let half_w = PLAYER_WIDTH / 2.0;
-    let player_min = Vec3::new(
-        player_pos.x - half_w,
-        player_pos.y,
-        player_pos.z - half_w,
-    );
+    let player_min = Vec3::new(player_pos.x - half_w, player_pos.y, player_pos.z - half_w);
     let player_max = Vec3::new(
         player_pos.x + half_w,
         player_pos.y + PLAYER_HEIGHT,

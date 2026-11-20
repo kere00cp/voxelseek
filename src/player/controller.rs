@@ -10,7 +10,7 @@ use crate::ui::inventory_screen::InventoryOpen;
 use crate::ui::main_menu::InMainMenu;
 use crate::ui::pause_menu::PauseState;
 
-use super::{Player, PlayerYaw, PlayerPitch};
+use super::{Player, PlayerPitch, PlayerYaw};
 
 const MOUSE_SENSITIVITY: f32 = 0.003;
 
@@ -24,7 +24,14 @@ fn any_ui_open(
     dead: &PlayerDead,
     console: &crate::harness::HarnessConsole,
 ) -> bool {
-    in_menu.0 || pause.0 || inventory_open.0 || ct_open.0 || furnace_open.0.is_some() || chest_open.0.is_some() || dead.0 || console.open
+    in_menu.0
+        || pause.0
+        || inventory_open.0
+        || ct_open.0
+        || furnace_open.0.is_some()
+        || chest_open.0.is_some()
+        || dead.0
+        || console.open
 }
 
 pub fn mouse_look(
@@ -40,7 +47,16 @@ pub fn mouse_look(
     mut player_q: Query<(&mut PlayerYaw, &mut PlayerPitch, &Children), With<Player>>,
     mut camera_q: Query<&mut Transform, With<Camera3d>>,
 ) {
-    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead, &console) {
+    if any_ui_open(
+        &in_menu,
+        &pause,
+        &inventory_open,
+        &ct_open,
+        &furnace_open,
+        &chest_open,
+        &dead,
+        &console,
+    ) {
         return;
     }
 
@@ -51,10 +67,8 @@ pub fn mouse_look(
 
     for (mut yaw, mut pitch, children) in &mut player_q {
         yaw.0 -= delta.x * MOUSE_SENSITIVITY;
-        pitch.0 = (pitch.0 - delta.y * MOUSE_SENSITIVITY).clamp(
-            -89.0_f32.to_radians(),
-            89.0_f32.to_radians(),
-        );
+        pitch.0 = (pitch.0 - delta.y * MOUSE_SENSITIVITY)
+            .clamp(-89.0_f32.to_radians(), 89.0_f32.to_radians());
 
         for child in children.iter() {
             if let Ok(mut cam_tf) = camera_q.get_mut(child) {
@@ -74,9 +88,26 @@ pub fn player_movement(
     chest_open: Res<ChestOpen>,
     dead: Res<PlayerDead>,
     console: Res<crate::harness::HarnessConsole>,
-    mut query: Query<(&mut super::Velocity, &PlayerYaw, &super::Hunger, &mut super::Sneaking), With<Player>>,
+    mut query: Query<
+        (
+            &mut super::Velocity,
+            &PlayerYaw,
+            &super::Hunger,
+            &mut super::Sneaking,
+        ),
+        With<Player>,
+    >,
 ) {
-    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead, &console) {
+    if any_ui_open(
+        &in_menu,
+        &pause,
+        &inventory_open,
+        &ct_open,
+        &furnace_open,
+        &chest_open,
+        &dead,
+        &console,
+    ) {
         return;
     }
 
@@ -135,7 +166,16 @@ pub fn cursor_grab(
     mut cursor_q: Query<&mut CursorOptions, With<PrimaryWindow>>,
 ) {
     // Don't grab cursor when any UI screen is open
-    if any_ui_open(&in_menu, &pause, &inventory_open, &ct_open, &furnace_open, &chest_open, &dead, &console) {
+    if any_ui_open(
+        &in_menu,
+        &pause,
+        &inventory_open,
+        &ct_open,
+        &furnace_open,
+        &chest_open,
+        &dead,
+        &console,
+    ) {
         return;
     }
 
@@ -149,9 +189,7 @@ pub fn cursor_grab(
     }
 }
 
-pub fn apply_yaw_to_transform(
-    mut query: Query<(&mut Transform, &PlayerYaw), With<Player>>,
-) {
+pub fn apply_yaw_to_transform(mut query: Query<(&mut Transform, &PlayerYaw), With<Player>>) {
     for (mut tf, yaw) in &mut query {
         tf.rotation = Quat::from_rotation_y(yaw.0);
     }

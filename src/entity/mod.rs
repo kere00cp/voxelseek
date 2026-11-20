@@ -8,7 +8,13 @@ pub struct EntityPlugin;
 impl Plugin for EntityPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<mob::SunburnTimer>()
-            .add_systems(Startup, (mob::setup_mob_materials, dropped_item::setup_dropped_item_assets))
+            .add_systems(
+                Startup,
+                (
+                    mob::setup_mob_materials,
+                    dropped_item::setup_dropped_item_assets,
+                ),
+            )
             .add_systems(
                 Update,
                 (

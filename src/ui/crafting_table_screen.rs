@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 
-use crate::inventory::crafting::{self, CraftingTableGrid, CraftingTableOpen, CRAFTING_TABLE_SIZE};
-use crate::inventory::inventory::{Inventory, INVENTORY_COLS, INVENTORY_SLOTS};
-use crate::ui::inventory_screen::CursorItem;
 use super::UiAtlas;
 use super::common::*;
+use crate::inventory::crafting::{self, CRAFTING_TABLE_SIZE, CraftingTableGrid, CraftingTableOpen};
+use crate::inventory::inventory::{INVENTORY_COLS, INVENTORY_SLOTS, Inventory};
+use crate::ui::inventory_screen::CursorItem;
 
 #[derive(Component)]
 pub struct CraftingTableUiRoot;
@@ -105,8 +105,14 @@ pub fn spawn_crafting_table_ui(
             parent.spawn((
                 Text::new("Crafting Table"),
                 TextColor(Color::WHITE),
-                TextFont { font_size: 20.0, ..default() },
-                Node { margin: UiRect::bottom(Val::Px(8.0)), ..default() },
+                TextFont {
+                    font_size: 20.0,
+                    ..default()
+                },
+                Node {
+                    margin: UiRect::bottom(Val::Px(8.0)),
+                    ..default()
+                },
             ));
 
             // Crafting area: 3x3 grid + arrow + output
@@ -171,7 +177,10 @@ pub fn spawn_crafting_table_ui(
                                                         CraftingTableSlotCount(slot_idx),
                                                         Text::new(count_text(&data)),
                                                         TextColor(Color::WHITE),
-                                                        TextFont { font_size: 11.0, ..default() },
+                                                        TextFont {
+                                                            font_size: 11.0,
+                                                            ..default()
+                                                        },
                                                     ));
                                                 });
                                             });
@@ -184,8 +193,14 @@ pub fn spawn_crafting_table_ui(
                     crafting_row.spawn((
                         Text::new("=>"),
                         TextColor(Color::srgba(0.8, 0.8, 0.8, 0.9)),
-                        TextFont { font_size: 20.0, ..default() },
-                        Node { margin: UiRect::horizontal(Val::Px(8.0)), ..default() },
+                        TextFont {
+                            font_size: 20.0,
+                            ..default()
+                        },
+                        Node {
+                            margin: UiRect::horizontal(Val::Px(8.0)),
+                            ..default()
+                        },
                     ));
 
                     // Output slot
@@ -222,7 +237,10 @@ pub fn spawn_crafting_table_ui(
                                     CraftingTableOutputCount,
                                     Text::new(count_text(&output)),
                                     TextColor(Color::WHITE),
-                                    TextFont { font_size: 11.0, ..default() },
+                                    TextFont {
+                                        font_size: 11.0,
+                                        ..default()
+                                    },
                                 ));
                             });
                         });
@@ -232,8 +250,14 @@ pub fn spawn_crafting_table_ui(
             parent.spawn((
                 Text::new("Inventory"),
                 TextColor(Color::WHITE),
-                TextFont { font_size: 16.0, ..default() },
-                Node { margin: UiRect::vertical(Val::Px(4.0)), ..default() },
+                TextFont {
+                    font_size: 16.0,
+                    ..default()
+                },
+                Node {
+                    margin: UiRect::vertical(Val::Px(4.0)),
+                    ..default()
+                },
             ));
 
             // Player inventory grid
@@ -291,14 +315,19 @@ pub fn spawn_crafting_table_ui(
                                             slot_image(&atlas, &data),
                                             slot_bg(&data),
                                         ))
-                                        .with_children(|bp| {
-                                            bp.spawn((
-                                                CraftingTableInvSlotCount(slot_idx),
-                                                Text::new(count_text(&data)),
-                                                TextColor(Color::WHITE),
-                                                TextFont { font_size: 11.0, ..default() },
-                                            ));
-                                        });
+                                        .with_children(
+                                            |bp| {
+                                                bp.spawn((
+                                                    CraftingTableInvSlotCount(slot_idx),
+                                                    Text::new(count_text(&data)),
+                                                    TextColor(Color::WHITE),
+                                                    TextFont {
+                                                        font_size: 11.0,
+                                                        ..default()
+                                                    },
+                                                ));
+                                            },
+                                        );
                                     });
                             }
                         });
@@ -362,7 +391,9 @@ pub fn crafting_table_output_interaction(
         for child in children.iter() {
             if output_slot_q.get(child).is_ok() {
                 let Some(output) = ct_grid.output else {
-                    info!("[CRAFT] crafting_table_output_interaction: clicked output but no output available");
+                    info!(
+                        "[CRAFT] crafting_table_output_interaction: clicked output but no output available"
+                    );
                     return;
                 };
 
@@ -410,7 +441,9 @@ pub fn crafting_table_output_interaction(
                 ct_grid.output = crafting::check_recipes_3x3(&ct_grid);
                 info!(
                     "[CRAFT] crafting_table_output_interaction: new output after consumption: {:?}",
-                    ct_grid.output.map(|(i, c, _)| format!("{}x{}", i.display_name(), c)),
+                    ct_grid
+                        .output
+                        .map(|(i, c, _)| format!("{}x{}", i.display_name(), c)),
                 );
                 return;
             }
@@ -451,12 +484,47 @@ pub fn update_crafting_table_ui(
     ct_grid: Res<CraftingTableGrid>,
     inventory: Res<Inventory>,
     atlas: Res<UiAtlas>,
-    mut slots: Query<(&CraftingTableSlot, &mut ImageNode, &mut BackgroundColor), (Without<CraftingTableOutputSlot>, Without<CraftingTableInvSlot>)>,
-    mut counts: Query<(&CraftingTableSlotCount, &mut Text), (Without<CraftingTableOutputCount>, Without<CraftingTableInvSlotCount>)>,
-    mut output_slot: Query<(&mut ImageNode, &mut BackgroundColor), (With<CraftingTableOutputSlot>, Without<CraftingTableSlot>, Without<CraftingTableInvSlot>)>,
-    mut output_count: Query<&mut Text, (With<CraftingTableOutputCount>, Without<CraftingTableSlotCount>, Without<CraftingTableInvSlotCount>)>,
-    mut inv_slots: Query<(&CraftingTableInvSlot, &mut ImageNode, &mut BackgroundColor), (Without<CraftingTableSlot>, Without<CraftingTableOutputSlot>)>,
-    mut inv_counts: Query<(&CraftingTableInvSlotCount, &mut Text), (Without<CraftingTableSlotCount>, Without<CraftingTableOutputCount>)>,
+    mut slots: Query<
+        (&CraftingTableSlot, &mut ImageNode, &mut BackgroundColor),
+        (
+            Without<CraftingTableOutputSlot>,
+            Without<CraftingTableInvSlot>,
+        ),
+    >,
+    mut counts: Query<
+        (&CraftingTableSlotCount, &mut Text),
+        (
+            Without<CraftingTableOutputCount>,
+            Without<CraftingTableInvSlotCount>,
+        ),
+    >,
+    mut output_slot: Query<
+        (&mut ImageNode, &mut BackgroundColor),
+        (
+            With<CraftingTableOutputSlot>,
+            Without<CraftingTableSlot>,
+            Without<CraftingTableInvSlot>,
+        ),
+    >,
+    mut output_count: Query<
+        &mut Text,
+        (
+            With<CraftingTableOutputCount>,
+            Without<CraftingTableSlotCount>,
+            Without<CraftingTableInvSlotCount>,
+        ),
+    >,
+    mut inv_slots: Query<
+        (&CraftingTableInvSlot, &mut ImageNode, &mut BackgroundColor),
+        (Without<CraftingTableSlot>, Without<CraftingTableOutputSlot>),
+    >,
+    mut inv_counts: Query<
+        (&CraftingTableInvSlotCount, &mut Text),
+        (
+            Without<CraftingTableSlotCount>,
+            Without<CraftingTableOutputCount>,
+        ),
+    >,
 ) {
     let ct_changed = ct_grid.is_changed();
     let inv_changed = inventory.is_changed();

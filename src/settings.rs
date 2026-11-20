@@ -39,8 +39,7 @@ impl Default for GameSettings {
 impl GameSettings {
     /// Load settings from disk, falling back to defaults on any problem.
     pub fn load() -> Self {
-        let mut settings = Self::load_from(std::path::Path::new(SETTINGS_FILE))
-            .unwrap_or_default();
+        let mut settings = Self::load_from(std::path::Path::new(SETTINGS_FILE)).unwrap_or_default();
         settings.render_distance = settings.render_distance.clamp(2, 24);
         settings.fov = settings.fov.clamp(30.0, 120.0);
         // Validate the texture pack atlas exists (it is produced by build.rs).

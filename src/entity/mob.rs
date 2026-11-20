@@ -79,11 +79,19 @@ impl MobType {
             }
             MobType::Zombie => {
                 let count = rng.random_range(0u8..=2);
-                if count > 0 { vec![(Item::RottenFlesh, count)] } else { vec![] }
+                if count > 0 {
+                    vec![(Item::RottenFlesh, count)]
+                } else {
+                    vec![]
+                }
             }
             MobType::Skeleton => {
                 let count = rng.random_range(0u8..=2);
-                if count > 0 { vec![(Item::Bone, count)] } else { vec![] }
+                if count > 0 {
+                    vec![(Item::Bone, count)]
+                } else {
+                    vec![]
+                }
             }
         }
     }
@@ -343,7 +351,9 @@ pub fn spawn_mobs(
     // Try to spawn a hostile mob at night
     let mut spawned = false;
     if night && hostile_count < MAX_HOSTILE_MOBS {
-        if let Some(spawn_pos) = find_spawn_position(player_pos, &store, &mut rng, 24.0, 128.0, false) {
+        if let Some(spawn_pos) =
+            find_spawn_position(player_pos, &store, &mut rng, 24.0, 128.0, false)
+        {
             let mob_type = if rng.random_bool(0.5) {
                 MobType::Zombie
             } else {
@@ -351,9 +361,18 @@ pub fn spawn_mobs(
             };
 
             let (mesh, material) = match mob_type {
-                MobType::Zombie => (mob_materials.humanoid_mesh.clone(), mob_materials.zombie_material.clone()),
-                MobType::Skeleton => (mob_materials.humanoid_mesh.clone(), mob_materials.skeleton_material.clone()),
-                _ => (mob_materials.humanoid_mesh.clone(), mob_materials.zombie_material.clone()),
+                MobType::Zombie => (
+                    mob_materials.humanoid_mesh.clone(),
+                    mob_materials.zombie_material.clone(),
+                ),
+                MobType::Skeleton => (
+                    mob_materials.humanoid_mesh.clone(),
+                    mob_materials.skeleton_material.clone(),
+                ),
+                _ => (
+                    mob_materials.humanoid_mesh.clone(),
+                    mob_materials.zombie_material.clone(),
+                ),
             };
 
             commands.spawn((
@@ -382,7 +401,8 @@ pub fn spawn_mobs(
         return;
     }
 
-    let Some(spawn_pos) = find_spawn_position(player_pos, &store, &mut rng, 10.0, 40.0, true) else {
+    let Some(spawn_pos) = find_spawn_position(player_pos, &store, &mut rng, 10.0, 40.0, true)
+    else {
         return;
     };
 
@@ -393,8 +413,14 @@ pub fn spawn_mobs(
     };
 
     let (mesh, material) = match mob_type {
-        MobType::Sheep => (mob_materials.sheep_mesh.clone(), mob_materials.sheep_material.clone()),
-        MobType::Cow => (mob_materials.cow_mesh.clone(), mob_materials.cow_material.clone()),
+        MobType::Sheep => (
+            mob_materials.sheep_mesh.clone(),
+            mob_materials.sheep_material.clone(),
+        ),
+        MobType::Cow => (
+            mob_materials.cow_mesh.clone(),
+            mob_materials.cow_material.clone(),
+        ),
         _ => return,
     };
 
@@ -533,7 +559,14 @@ pub fn despawn_dead_mobs(
         if health.current <= 0.0 {
             let drop_pos = transform.translation;
             for (item, count) in mob.mob_type.loot_drops() {
-                super::dropped_item::spawn_dropped_item(&mut commands, &mut meshes, &drop_assets, item, count, drop_pos);
+                super::dropped_item::spawn_dropped_item(
+                    &mut commands,
+                    &mut meshes,
+                    &drop_assets,
+                    item,
+                    count,
+                    drop_pos,
+                );
             }
             death_audio.write(crate::audio::MobDeathAudio);
             commands.entity(entity).despawn();
@@ -546,7 +579,10 @@ pub struct SunburnTimer(pub Timer);
 
 impl Default for SunburnTimer {
     fn default() -> Self {
-        Self(Timer::from_seconds(SUNBURN_CHECK_INTERVAL, TimerMode::Repeating))
+        Self(Timer::from_seconds(
+            SUNBURN_CHECK_INTERVAL,
+            TimerMode::Repeating,
+        ))
     }
 }
 
@@ -598,7 +634,13 @@ fn mob_collides_horizontal(store: &ChunkDataStore, pos: Vec3, half_w: f32, half_
 pub fn move_mobs(
     time: Res<Time>,
     store: Res<ChunkDataStore>,
-    mut mobs: Query<(&mut Transform, &MobAI, &mut MobVelocity, &Mob, &mut MobOnGround)>,
+    mut mobs: Query<(
+        &mut Transform,
+        &MobAI,
+        &mut MobVelocity,
+        &Mob,
+        &mut MobOnGround,
+    )>,
 ) {
     let dt = time.delta_secs();
 
@@ -708,7 +750,11 @@ pub fn move_mobs(
         if mob_collides_horizontal(&store, proposed_x, half_w, half_height) {
             // Blocked on X: try step-up if on ground
             if on_ground.0 {
-                let step_up_pos = Vec3::new(new_x, transform.translation.y + 1.0, transform.translation.z);
+                let step_up_pos = Vec3::new(
+                    new_x,
+                    transform.translation.y + 1.0,
+                    transform.translation.z,
+                );
                 if !mob_collides_horizontal(&store, step_up_pos, half_w, half_height) {
                     // Can step up - move up and forward
                     transform.translation.x = new_x;
@@ -732,7 +778,11 @@ pub fn move_mobs(
         if mob_collides_horizontal(&store, proposed_z, half_w, half_height) {
             // Blocked on Z: try step-up if on ground and haven't already stepped up this frame
             if on_ground.0 && !stepped_up {
-                let step_up_pos = Vec3::new(transform.translation.x, transform.translation.y + 1.0, new_z);
+                let step_up_pos = Vec3::new(
+                    transform.translation.x,
+                    transform.translation.y + 1.0,
+                    new_z,
+                );
                 if !mob_collides_horizontal(&store, step_up_pos, half_w, half_height) {
                     transform.translation.z = new_z;
                     transform.translation.y += 1.0;
@@ -745,15 +795,11 @@ pub fn move_mobs(
         } else {
             transform.translation.z = new_z;
         }
-
     }
 }
 
 /// Despawn mobs that fall into the void (below Y=-10).
-pub fn despawn_void_mobs(
-    mut commands: Commands,
-    mobs: Query<(Entity, &Transform), With<Mob>>,
-) {
+pub fn despawn_void_mobs(mut commands: Commands, mobs: Query<(Entity, &Transform), With<Mob>>) {
     for (entity, transform) in &mobs {
         if transform.translation.y < -10.0 {
             commands.entity(entity).despawn();

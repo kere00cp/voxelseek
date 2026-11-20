@@ -3,20 +3,25 @@
 //! All network I/O happens on background threads; the Bevy world is only
 //! touched from the main thread via [`crate::harness::console::poll_network`].
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::sync::mpsc::Sender;
 use std::time::Duration;
 
-use super::tools::tool_schemas;
 use super::HarnessConfig;
+use super::tools::tool_schemas;
 
 /// Result of one HTTP round-trip.
 pub enum ApiOutcome {
     /// The model produced a final text answer.
-    Final { content: String },
+    Final {
+        content: String,
+    },
     /// The model requested tool calls. `assistant` is the raw assistant
     /// message (with `tool_calls`) that must be appended to the history.
-    ToolCalls { assistant: Value, calls: Vec<PendingCall> },
+    ToolCalls {
+        assistant: Value,
+        calls: Vec<PendingCall>,
+    },
     Error(String),
 }
 

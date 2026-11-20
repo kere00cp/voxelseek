@@ -121,7 +121,11 @@ pub fn furnace_tick(time: Res<Time>, mut furnaces: ResMut<Furnaces>) {
             data.progress = 0.0;
 
             // Consume one input
-            let input_item = data.input.as_ref().map(|(it, _, _)| *it).unwrap_or(Item::Block(BlockType::Air));
+            let input_item = data
+                .input
+                .as_ref()
+                .map(|(it, _, _)| *it)
+                .unwrap_or(Item::Block(BlockType::Air));
             let result = smelting_result(input_item);
 
             if let Some((_, count, _)) = &mut data.input {

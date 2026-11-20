@@ -2,12 +2,12 @@ use bevy::ecs::hierarchy::ChildSpawnerCommands;
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 
-use crate::inventory::furnace::{FurnaceOpen, Furnaces};
-use crate::inventory::inventory::{Inventory, INVENTORY_COLS, INVENTORY_SLOTS};
-use crate::inventory::item::Item;
-use crate::ui::inventory_screen::CursorItem;
 use super::UiAtlas;
 use super::common::*;
+use crate::inventory::furnace::{FurnaceOpen, Furnaces};
+use crate::inventory::inventory::{INVENTORY_COLS, INVENTORY_SLOTS, Inventory};
+use crate::inventory::item::Item;
+use crate::ui::inventory_screen::CursorItem;
 
 const FURNACE_SLOT_SIZE: f32 = 48.0;
 const FURNACE_INNER_SIZE: f32 = FURNACE_SLOT_SIZE - BLOCK_INSET * 2.0 - BORDER_WIDTH * 2.0;
@@ -282,8 +282,14 @@ pub fn spawn_furnace_ui(
             parent.spawn((
                 Text::new("Inventory"),
                 TextColor(Color::WHITE),
-                TextFont { font_size: 16.0, ..default() },
-                Node { margin: UiRect::vertical(Val::Px(4.0)), ..default() },
+                TextFont {
+                    font_size: 16.0,
+                    ..default()
+                },
+                Node {
+                    margin: UiRect::vertical(Val::Px(4.0)),
+                    ..default()
+                },
             ));
 
             // Player inventory grid
@@ -341,14 +347,19 @@ pub fn spawn_furnace_ui(
                                             slot_image(&atlas, &data),
                                             slot_bg(&data),
                                         ))
-                                        .with_children(|bp| {
-                                            bp.spawn((
-                                                FurnaceInvSlotCount(slot_idx),
-                                                Text::new(count_text(&data)),
-                                                TextColor(Color::WHITE),
-                                                TextFont { font_size: 11.0, ..default() },
-                                            ));
-                                        });
+                                        .with_children(
+                                            |bp| {
+                                                bp.spawn((
+                                                    FurnaceInvSlotCount(slot_idx),
+                                                    Text::new(count_text(&data)),
+                                                    TextColor(Color::WHITE),
+                                                    TextFont {
+                                                        font_size: 11.0,
+                                                        ..default()
+                                                    },
+                                                ));
+                                            },
+                                        );
                                     });
                             }
                         });
@@ -599,19 +610,83 @@ pub fn update_furnace_ui(
     furnace_open: Res<FurnaceOpen>,
     inventory: Res<Inventory>,
     atlas: Res<UiAtlas>,
-    mut input_slots: Query<(&mut ImageNode, &mut BackgroundColor), (With<FurnaceInputSlot>, Without<FurnaceFuelSlot>, Without<FurnaceOutputSlot>, Without<FurnaceInvSlot>)>,
-    mut input_counts: Query<&mut Text, (With<FurnaceInputCount>, Without<FurnaceFuelCount>, Without<FurnaceOutputCount>, Without<FurnaceInvSlotCount>)>,
-    mut fuel_slots: Query<(&mut ImageNode, &mut BackgroundColor), (With<FurnaceFuelSlot>, Without<FurnaceInputSlot>, Without<FurnaceOutputSlot>, Without<FurnaceInvSlot>)>,
-    mut fuel_counts: Query<&mut Text, (With<FurnaceFuelCount>, Without<FurnaceInputCount>, Without<FurnaceOutputCount>, Without<FurnaceInvSlotCount>)>,
-    mut output_slots: Query<(&mut ImageNode, &mut BackgroundColor), (With<FurnaceOutputSlot>, Without<FurnaceInputSlot>, Without<FurnaceFuelSlot>, Without<FurnaceInvSlot>)>,
-    mut output_counts: Query<&mut Text, (With<FurnaceOutputCount>, Without<FurnaceInputCount>, Without<FurnaceFuelCount>, Without<FurnaceInvSlotCount>)>,
+    mut input_slots: Query<
+        (&mut ImageNode, &mut BackgroundColor),
+        (
+            With<FurnaceInputSlot>,
+            Without<FurnaceFuelSlot>,
+            Without<FurnaceOutputSlot>,
+            Without<FurnaceInvSlot>,
+        ),
+    >,
+    mut input_counts: Query<
+        &mut Text,
+        (
+            With<FurnaceInputCount>,
+            Without<FurnaceFuelCount>,
+            Without<FurnaceOutputCount>,
+            Without<FurnaceInvSlotCount>,
+        ),
+    >,
+    mut fuel_slots: Query<
+        (&mut ImageNode, &mut BackgroundColor),
+        (
+            With<FurnaceFuelSlot>,
+            Without<FurnaceInputSlot>,
+            Without<FurnaceOutputSlot>,
+            Without<FurnaceInvSlot>,
+        ),
+    >,
+    mut fuel_counts: Query<
+        &mut Text,
+        (
+            With<FurnaceFuelCount>,
+            Without<FurnaceInputCount>,
+            Without<FurnaceOutputCount>,
+            Without<FurnaceInvSlotCount>,
+        ),
+    >,
+    mut output_slots: Query<
+        (&mut ImageNode, &mut BackgroundColor),
+        (
+            With<FurnaceOutputSlot>,
+            Without<FurnaceInputSlot>,
+            Without<FurnaceFuelSlot>,
+            Without<FurnaceInvSlot>,
+        ),
+    >,
+    mut output_counts: Query<
+        &mut Text,
+        (
+            With<FurnaceOutputCount>,
+            Without<FurnaceInputCount>,
+            Without<FurnaceFuelCount>,
+            Without<FurnaceInvSlotCount>,
+        ),
+    >,
     mut progress_bars: Query<&mut Node, (With<FurnaceProgressBar>, Without<FurnaceFuelBar>)>,
     mut fuel_bars: Query<&mut Node, (With<FurnaceFuelBar>, Without<FurnaceProgressBar>)>,
-    mut inv_slots: Query<(&FurnaceInvSlot, &mut ImageNode, &mut BackgroundColor), (Without<FurnaceInputSlot>, Without<FurnaceFuelSlot>, Without<FurnaceOutputSlot>)>,
-    mut inv_counts: Query<(&FurnaceInvSlotCount, &mut Text), (Without<FurnaceInputCount>, Without<FurnaceFuelCount>, Without<FurnaceOutputCount>)>,
+    mut inv_slots: Query<
+        (&FurnaceInvSlot, &mut ImageNode, &mut BackgroundColor),
+        (
+            Without<FurnaceInputSlot>,
+            Without<FurnaceFuelSlot>,
+            Without<FurnaceOutputSlot>,
+        ),
+    >,
+    mut inv_counts: Query<
+        (&FurnaceInvSlotCount, &mut Text),
+        (
+            Without<FurnaceInputCount>,
+            Without<FurnaceFuelCount>,
+            Without<FurnaceOutputCount>,
+        ),
+    >,
 ) {
     let Some(pos) = furnace_open.0 else { return };
-    let Some(data) = furnaces.data.get(&pos) else { return };
+    let Some(data) = furnaces.data.get(&pos) else {
+        return;
+    };
 
     // Input slot
     if let Ok((mut img, mut bg)) = input_slots.single_mut() {

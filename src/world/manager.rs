@@ -1,14 +1,14 @@
+use crate::block::BlockType;
 use bevy::prelude::*;
 use bevy::tasks::{AsyncComputeTaskPool, Task, block_on, poll_once};
 use std::collections::{HashMap, HashSet};
-use crate::block::BlockType;
 
-use super::chunk::{Chunk, CHUNK_SIZE};
+use super::WorldSeed;
+use super::chunk::{CHUNK_SIZE, Chunk};
 use super::coordinates::world_to_chunk_pos;
 use super::generation::{generate_chunk, set_world_seed};
 use super::material::{AtlasTileMaterial, ChunkMaterialType};
-use super::meshing::{build_chunk_mesh, NeighborChunks};
-use super::WorldSeed;
+use super::meshing::{NeighborChunks, build_chunk_mesh};
 
 const MAX_LOADS_PER_FRAME: usize = 8;
 const WORLD_HEIGHT_CHUNKS: i32 = 16;
@@ -181,8 +181,8 @@ pub fn update_chunk_loading(
         }
 
         // Try loading from disk first, otherwise generate
-        let chunk = crate::save::persistence::load_chunk(pos)
-            .unwrap_or_else(|| generate_chunk(pos));
+        let chunk =
+            crate::save::persistence::load_chunk(pos).unwrap_or_else(|| generate_chunk(pos));
         store.chunks.insert(pos, chunk);
 
         // Spawn entity with NeedsMesh marker
@@ -220,7 +220,9 @@ pub fn update_chunk_loading(
                                     base_z + z as i32,
                                 );
                                 tracker.saplings.entry(world_pos).or_insert_with(|| {
-                                    SAPLING_GROW_MIN + rand::random::<f32>() * (SAPLING_GROW_MAX - SAPLING_GROW_MIN)
+                                    SAPLING_GROW_MIN
+                                        + rand::random::<f32>()
+                                            * (SAPLING_GROW_MAX - SAPLING_GROW_MIN)
                                 });
                             }
                         }
@@ -239,14 +241,20 @@ pub fn update_chunk_loading(
                     for z in 0..CHUNK_SIZE {
                         for x in 0..CHUNK_SIZE {
                             let block = chunk.get(x, y, z);
-                            if matches!(block, BlockType::WheatStage0 | BlockType::WheatStage1 | BlockType::WheatStage2) {
+                            if matches!(
+                                block,
+                                BlockType::WheatStage0
+                                    | BlockType::WheatStage1
+                                    | BlockType::WheatStage2
+                            ) {
                                 let world_pos = IVec3::new(
                                     base_x + x as i32,
                                     base_y + y as i32,
                                     base_z + z as i32,
                                 );
                                 crop_tracker.crops.entry(world_pos).or_insert_with(|| {
-                                    CROP_GROW_MIN + rand::random::<f32>() * (CROP_GROW_MAX - CROP_GROW_MIN)
+                                    CROP_GROW_MIN
+                                        + rand::random::<f32>() * (CROP_GROW_MAX - CROP_GROW_MIN)
                                 });
                             }
                         }
@@ -275,21 +283,18 @@ pub fn start_mesh_tasks(
 
         // Look up the 6 neighbor chunks: [+X, -X, +Y, -Y, +Z, -Z]
         let offsets = [
-            IVec3::X,   // +X (East)
+            IVec3::X,     // +X (East)
             IVec3::NEG_X, // -X (West)
-            IVec3::Y,   // +Y (Top)
+            IVec3::Y,     // +Y (Top)
             IVec3::NEG_Y, // -Y (Bottom)
-            IVec3::Z,   // +Z (South)
+            IVec3::Z,     // +Z (South)
             IVec3::NEG_Z, // -Z (North)
         ];
-        let neighbor_chunks: [Option<Chunk>; 6] = std::array::from_fn(|i| {
-            store.chunks.get(&(coord.0 + offsets[i])).cloned()
-        });
+        let neighbor_chunks: [Option<Chunk>; 6] =
+            std::array::from_fn(|i| store.chunks.get(&(coord.0 + offsets[i])).cloned());
 
         let task = task_pool.spawn(async move {
-            let neighbors: NeighborChunks = std::array::from_fn(|i| {
-                neighbor_chunks[i].as_ref()
-            });
+            let neighbors: NeighborChunks = std::array::from_fn(|i| neighbor_chunks[i].as_ref());
             build_chunk_mesh(&chunk_clone, &neighbors)
         });
 
@@ -309,13 +314,10 @@ pub fn apply_mesh_results(
 ) {
     for (entity, mut task) in &mut tasks {
         if let Some(mesh) = block_on(poll_once(&mut task.0)) {
-            commands
-                .entity(entity)
-                .remove::<MeshTask>()
-                .insert((
-                    Mesh3d(meshes.add(mesh)),
-                    MeshMaterial3d::<ChunkMaterialType>(material.0.clone()),
-                ));
+            commands.entity(entity).remove::<MeshTask>().insert((
+                Mesh3d(meshes.add(mesh)),
+                MeshMaterial3d::<ChunkMaterialType>(material.0.clone()),
+            ));
         }
     }
 }
@@ -407,8 +409,16 @@ pub fn update_sapling_growth(
         };
 
         // Check all chunks the tree would touch are loaded
-        let tree_min = IVec3::new(pos.x - TREE_CANOPY_RADIUS, pos.y, pos.z - TREE_CANOPY_RADIUS);
-        let tree_max = IVec3::new(pos.x + TREE_CANOPY_RADIUS, pos.y + trunk_height + 1, pos.z + TREE_CANOPY_RADIUS);
+        let tree_min = IVec3::new(
+            pos.x - TREE_CANOPY_RADIUS,
+            pos.y,
+            pos.z - TREE_CANOPY_RADIUS,
+        );
+        let tree_max = IVec3::new(
+            pos.x + TREE_CANOPY_RADIUS,
+            pos.y + trunk_height + 1,
+            pos.z + TREE_CANOPY_RADIUS,
+        );
         let chunk_min = IVec3::new(
             tree_min.x.div_euclid(size),
             tree_min.y.div_euclid(size),
@@ -433,7 +443,8 @@ pub fn update_sapling_growth(
         if !all_loaded {
             // Retry later when chunks may be loaded
             if let Some(timer) = tracker.saplings.get_mut(pos) {
-                *timer = SAPLING_GROW_MIN + rand::random::<f32>() * (SAPLING_GROW_MAX - SAPLING_GROW_MIN);
+                *timer = SAPLING_GROW_MIN
+                    + rand::random::<f32>() * (SAPLING_GROW_MAX - SAPLING_GROW_MIN);
             }
             continue;
         }
@@ -443,7 +454,10 @@ pub fn update_sapling_growth(
         for dy in 1..=TREE_SPACE_REQUIRED {
             let check_pos = *pos + IVec3::new(0, dy, 0);
             let block = get_block_at(&store, check_pos);
-            if block != BlockType::Air && block != BlockType::OakSapling && block != BlockType::BirchSapling {
+            if block != BlockType::Air
+                && block != BlockType::OakSapling
+                && block != BlockType::BirchSapling
+            {
                 has_space = false;
                 break;
             }
@@ -451,7 +465,8 @@ pub fn update_sapling_growth(
         if !has_space {
             // Can't grow, reset timer for another attempt later
             if let Some(timer) = tracker.saplings.get_mut(pos) {
-                *timer = SAPLING_GROW_MIN + rand::random::<f32>() * (SAPLING_GROW_MAX - SAPLING_GROW_MIN);
+                *timer = SAPLING_GROW_MIN
+                    + rand::random::<f32>() * (SAPLING_GROW_MAX - SAPLING_GROW_MIN);
             }
             continue;
         }
@@ -513,7 +528,10 @@ pub fn update_crop_growth(
     // Remove tracked crops that are no longer growing crops (broken/replaced/fully grown)
     crop_tracker.crops.retain(|pos, _| {
         let block = get_block_at(&store, *pos);
-        matches!(block, BlockType::WheatStage0 | BlockType::WheatStage1 | BlockType::WheatStage2)
+        matches!(
+            block,
+            BlockType::WheatStage0 | BlockType::WheatStage1 | BlockType::WheatStage2
+        )
     });
 
     // Tick timers and collect crops ready to advance

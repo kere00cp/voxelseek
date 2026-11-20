@@ -1,7 +1,7 @@
 use bevy::diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin};
 use bevy::prelude::*;
 
-use crate::player::{Player, PlayerYaw, PlayerPitch, Health, AirSupply, Hunger, ArmorSlots};
+use crate::player::{AirSupply, ArmorSlots, Health, Hunger, Player, PlayerPitch, PlayerYaw};
 
 #[derive(Component)]
 pub struct DebugText;
@@ -151,7 +151,12 @@ pub fn update_debug_text(
                 "XYZ: {:.1} / {:.1} / {:.1}\nChunk: {} {} {}",
                 pos.x, pos.y, pos.z, chunk_x, chunk_y, chunk_z
             ),
-            format!("Facing: {} ({:.1} / {:.1})", facing, yaw_deg, pitch.0.to_degrees()),
+            format!(
+                "Facing: {} ({:.1} / {:.1})",
+                facing,
+                yaw_deg,
+                pitch.0.to_degrees()
+            ),
         )
     } else {
         (String::new(), String::new())
@@ -255,7 +260,8 @@ const EMPTY_DRUMSTICK_COLOR: Color = Color::srgb(0.15, 0.1, 0.05);
 pub struct DrumstickIcon(pub usize);
 
 pub fn spawn_hunger_bar(mut commands: Commands) {
-    let total_width = NUM_DRUMSTICKS as f32 * DRUMSTICK_SIZE + (NUM_DRUMSTICKS as f32 - 1.0) * DRUMSTICK_GAP;
+    let total_width =
+        NUM_DRUMSTICKS as f32 * DRUMSTICK_SIZE + (NUM_DRUMSTICKS as f32 - 1.0) * DRUMSTICK_GAP;
     let half_hotbar = (9.0 * 40.0 + 8.0 * 2.0) / 2.0; // hotbar total width / 2
 
     commands

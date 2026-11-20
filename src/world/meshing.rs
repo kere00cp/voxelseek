@@ -1,10 +1,10 @@
-use bevy::prelude::*;
-use bevy::mesh::{Indices, PrimitiveTopology};
 use bevy::asset::RenderAssetUsages;
+use bevy::mesh::{Indices, PrimitiveTopology};
+use bevy::prelude::*;
 
-use crate::block::atlas::{face_uvs_tiled, tile_uvs, texture_index};
+use crate::block::atlas::{face_uvs_tiled, texture_index, tile_uvs};
 use crate::block::{BlockType, Face};
-use crate::world::chunk::{Chunk, CHUNK_SIZE};
+use crate::world::chunk::{CHUNK_SIZE, Chunk};
 
 /// Optional neighbor chunk data for cross-chunk face culling.
 /// Order: [+X, -X, +Y, -Y, +Z, -Z] matching [East, West, Top, Bottom, South, North].
@@ -27,12 +27,54 @@ struct FaceDir {
 }
 
 const FACE_DIRS: [FaceDir; 6] = [
-    FaceDir { face: Face::East,   axis: 0, u_axis: 2, v_axis: 1, back_face: false, flip_winding: true },
-    FaceDir { face: Face::West,   axis: 0, u_axis: 2, v_axis: 1, back_face: true,  flip_winding: true },
-    FaceDir { face: Face::Top,    axis: 1, u_axis: 0, v_axis: 2, back_face: false, flip_winding: true },
-    FaceDir { face: Face::Bottom, axis: 1, u_axis: 0, v_axis: 2, back_face: true,  flip_winding: true },
-    FaceDir { face: Face::South,  axis: 2, u_axis: 0, v_axis: 1, back_face: false, flip_winding: false },
-    FaceDir { face: Face::North,  axis: 2, u_axis: 0, v_axis: 1, back_face: true,  flip_winding: false },
+    FaceDir {
+        face: Face::East,
+        axis: 0,
+        u_axis: 2,
+        v_axis: 1,
+        back_face: false,
+        flip_winding: true,
+    },
+    FaceDir {
+        face: Face::West,
+        axis: 0,
+        u_axis: 2,
+        v_axis: 1,
+        back_face: true,
+        flip_winding: true,
+    },
+    FaceDir {
+        face: Face::Top,
+        axis: 1,
+        u_axis: 0,
+        v_axis: 2,
+        back_face: false,
+        flip_winding: true,
+    },
+    FaceDir {
+        face: Face::Bottom,
+        axis: 1,
+        u_axis: 0,
+        v_axis: 2,
+        back_face: true,
+        flip_winding: true,
+    },
+    FaceDir {
+        face: Face::South,
+        axis: 2,
+        u_axis: 0,
+        v_axis: 1,
+        back_face: false,
+        flip_winding: false,
+    },
+    FaceDir {
+        face: Face::North,
+        axis: 2,
+        u_axis: 0,
+        v_axis: 1,
+        back_face: true,
+        flip_winding: false,
+    },
 ];
 
 /// Determines whether a face should be generated between two blocks.
@@ -68,7 +110,15 @@ fn should_emit_face(block: BlockType, neighbor: BlockType) -> bool {
 
 /// Gets the block at position `[axis, u, v]` remapped to `[x, y, z]`.
 #[inline]
-fn get_block_from_pos(chunk: &Chunk, axis: usize, u_axis: usize, v_axis: usize, a: usize, u: usize, v: usize) -> BlockType {
+fn get_block_from_pos(
+    chunk: &Chunk,
+    axis: usize,
+    u_axis: usize,
+    v_axis: usize,
+    a: usize,
+    u: usize,
+    v: usize,
+) -> BlockType {
     let mut pos = [0usize; 3];
     pos[axis] = a;
     pos[u_axis] = u;
@@ -108,7 +158,15 @@ fn get_neighbor_block(
                 BlockType::Air
             }
         } else {
-            get_block_from_pos(chunk, face_dir.axis, face_dir.u_axis, face_dir.v_axis, slice - 1, u, v)
+            get_block_from_pos(
+                chunk,
+                face_dir.axis,
+                face_dir.u_axis,
+                face_dir.v_axis,
+                slice - 1,
+                u,
+                v,
+            )
         }
     } else {
         // Neighbor is at slice + 1 along the axis
@@ -129,7 +187,15 @@ fn get_neighbor_block(
                 BlockType::Air
             }
         } else {
-            get_block_from_pos(chunk, face_dir.axis, face_dir.u_axis, face_dir.v_axis, slice + 1, u, v)
+            get_block_from_pos(
+                chunk,
+                face_dir.axis,
+                face_dir.u_axis,
+                face_dir.v_axis,
+                slice + 1,
+                u,
+                v,
+            )
         }
     }
 }
@@ -161,7 +227,15 @@ pub fn build_chunk_mesh(chunk: &Chunk, neighbors: &NeighborChunks) -> Mesh {
 
             for v in 0..size {
                 for u in 0..size {
-                    let block = get_block_from_pos(chunk, face_dir.axis, face_dir.u_axis, face_dir.v_axis, slice, u, v);
+                    let block = get_block_from_pos(
+                        chunk,
+                        face_dir.axis,
+                        face_dir.u_axis,
+                        face_dir.v_axis,
+                        slice,
+                        u,
+                        v,
+                    );
                     let neighbor = get_neighbor_block(chunk, neighbors, face_dir, slice, u, v);
 
                     if should_emit_face(block, neighbor) {
@@ -263,12 +337,15 @@ pub fn build_chunk_mesh(chunk: &Chunk, neighbors: &NeighborChunks) -> Mesh {
         return empty_mesh();
     }
 
-    Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::default())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_1, uv1s)
-        .with_inserted_indices(Indices::U32(indices))
+    Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::default(),
+    )
+    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, normals)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
+    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_1, uv1s)
+    .with_inserted_indices(Indices::U32(indices))
 }
 
 /// Emit 4 vertices and 6 indices for a greedy-merged quad.
@@ -293,7 +370,11 @@ fn emit_quad(
     // Compute the 4 corner positions of the quad.
     // The quad lies on the face plane, which is at:
     //   slice (for back faces) or slice+1 (for front faces) along the axis.
-    let face_offset = if face_dir.back_face { slice as f32 } else { (slice + 1) as f32 };
+    let face_offset = if face_dir.back_face {
+        slice as f32
+    } else {
+        (slice + 1) as f32
+    };
 
     // The 4 corners in (u, v) space: (u_start, v_start) to (u_start+width, v_start+height)
     let u0 = u_start as f32;
@@ -421,16 +502,16 @@ fn emit_cross_billboard(
 
     // Quad 1 vertices: diagonal from (lo,0,lo) to (hi,1,hi)
     let q1 = [
-        [bx + lo, by,       bz + lo], // bottom-left
-        [bx + hi, by,       bz + hi], // bottom-right
+        [bx + lo, by, bz + lo],       // bottom-left
+        [bx + hi, by, bz + hi],       // bottom-right
         [bx + hi, by + 1.0, bz + hi], // top-right
         [bx + lo, by + 1.0, bz + lo], // top-left
     ];
 
     // Quad 2 vertices: diagonal from (hi,0,lo) to (lo,1,hi)
     let q2 = [
-        [bx + hi, by,       bz + lo], // bottom-left
-        [bx + lo, by,       bz + hi], // bottom-right
+        [bx + hi, by, bz + lo],       // bottom-left
+        [bx + lo, by, bz + hi],       // bottom-right
         [bx + lo, by + 1.0, bz + hi], // top-right
         [bx + hi, by + 1.0, bz + lo], // top-left
     ];
@@ -469,10 +550,13 @@ fn emit_cross_billboard(
 }
 
 fn empty_mesh() -> Mesh {
-    Mesh::new(PrimitiveTopology::TriangleList, RenderAssetUsages::default())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, Vec::<[f32; 3]>::new())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, Vec::<[f32; 3]>::new())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, Vec::<[f32; 2]>::new())
-        .with_inserted_attribute(Mesh::ATTRIBUTE_UV_1, Vec::<[f32; 2]>::new())
-        .with_inserted_indices(Indices::U32(Vec::new()))
+    Mesh::new(
+        PrimitiveTopology::TriangleList,
+        RenderAssetUsages::default(),
+    )
+    .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, Vec::<[f32; 3]>::new())
+    .with_inserted_attribute(Mesh::ATTRIBUTE_NORMAL, Vec::<[f32; 3]>::new())
+    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, Vec::<[f32; 2]>::new())
+    .with_inserted_attribute(Mesh::ATTRIBUTE_UV_1, Vec::<[f32; 2]>::new())
+    .with_inserted_indices(Indices::U32(Vec::new()))
 }

@@ -5,7 +5,9 @@ use bevy::prelude::*;
 use crate::inventory::chest::ChestStore;
 use crate::inventory::furnace::Furnaces;
 use crate::inventory::inventory::Inventory;
-use crate::player::{AirSupply, ArmorSlots, Health, Hunger, Player, PlayerPitch, PlayerYaw, SpawnPoint};
+use crate::player::{
+    AirSupply, ArmorSlots, Health, Hunger, Player, PlayerPitch, PlayerYaw, SpawnPoint,
+};
 use crate::world::manager::{CropTracker, SaplingTracker};
 
 pub struct SavePlugin;
@@ -26,7 +28,15 @@ impl Plugin for SavePlugin {
 fn save_all(
     store: ResMut<crate::world::manager::ChunkDataStore>,
     player_query: &Query<
-        (&Transform, &PlayerYaw, &PlayerPitch, &Health, &AirSupply, &Hunger, &ArmorSlots),
+        (
+            &Transform,
+            &PlayerYaw,
+            &PlayerPitch,
+            &Health,
+            &AirSupply,
+            &Hunger,
+            &ArmorSlots,
+        ),
         With<Player>,
     >,
     inventory: &Res<Inventory>,
@@ -54,7 +64,15 @@ fn save_all(
 
 fn save_player_state(
     player_query: &Query<
-        (&Transform, &PlayerYaw, &PlayerPitch, &Health, &AirSupply, &Hunger, &ArmorSlots),
+        (
+            &Transform,
+            &PlayerYaw,
+            &PlayerPitch,
+            &Health,
+            &AirSupply,
+            &Hunger,
+            &ArmorSlots,
+        ),
         With<Player>,
     >,
     inventory: &Res<Inventory>,
@@ -88,7 +106,15 @@ fn auto_save_system(
     mut timer: ResMut<AutoSaveTimer>,
     store: ResMut<crate::world::manager::ChunkDataStore>,
     player_query: Query<
-        (&Transform, &PlayerYaw, &PlayerPitch, &Health, &AirSupply, &Hunger, &ArmorSlots),
+        (
+            &Transform,
+            &PlayerYaw,
+            &PlayerPitch,
+            &Health,
+            &AirSupply,
+            &Hunger,
+            &ArmorSlots,
+        ),
         With<Player>,
     >,
     inventory: Res<Inventory>,
@@ -100,7 +126,16 @@ fn auto_save_system(
 ) {
     timer.0.tick(time.delta());
     if timer.0.just_finished() {
-        save_all(store, &player_query, &inventory, &spawn_point, &chest_store, &furnaces, &sapling_tracker, &crop_tracker);
+        save_all(
+            store,
+            &player_query,
+            &inventory,
+            &spawn_point,
+            &chest_store,
+            &furnaces,
+            &sapling_tracker,
+            &crop_tracker,
+        );
     }
 }
 
@@ -108,7 +143,15 @@ fn manual_save_system(
     keys: Res<ButtonInput<KeyCode>>,
     store: ResMut<crate::world::manager::ChunkDataStore>,
     player_query: Query<
-        (&Transform, &PlayerYaw, &PlayerPitch, &Health, &AirSupply, &Hunger, &ArmorSlots),
+        (
+            &Transform,
+            &PlayerYaw,
+            &PlayerPitch,
+            &Health,
+            &AirSupply,
+            &Hunger,
+            &ArmorSlots,
+        ),
         With<Player>,
     >,
     inventory: Res<Inventory>,
@@ -119,6 +162,15 @@ fn manual_save_system(
     crop_tracker: Res<CropTracker>,
 ) {
     if keys.pressed(KeyCode::ControlLeft) && keys.just_pressed(KeyCode::KeyS) {
-        save_all(store, &player_query, &inventory, &spawn_point, &chest_store, &furnaces, &sapling_tracker, &crop_tracker);
+        save_all(
+            store,
+            &player_query,
+            &inventory,
+            &spawn_point,
+            &chest_store,
+            &furnaces,
+            &sapling_tracker,
+            &crop_tracker,
+        );
     }
 }

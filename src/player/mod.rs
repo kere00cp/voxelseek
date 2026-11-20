@@ -52,8 +52,7 @@ impl Plugin for PlayerPlugin {
                         .after(physics::drowning)
                         .after(physics::hunger_system)
                         .after(physics::void_damage),
-                    physics::handle_death
-                        .after(crate::ui::death_screen::detect_death),
+                    physics::handle_death.after(crate::ui::death_screen::detect_death),
                     controller::apply_yaw_to_transform.after(controller::mouse_look),
                 ),
             )
@@ -64,17 +63,13 @@ impl Plugin for PlayerPlugin {
                 Update,
                 (
                     interaction::attack_mob,
-                    interaction::break_block
-                        .after(interaction::attack_mob),
-                    interaction::block_interact
-                        .in_set(interaction::BlockInteractSet),
-                    interaction::eat_food
-                        .after(interaction::BlockInteractSet),
+                    interaction::break_block.after(interaction::attack_mob),
+                    interaction::block_interact.in_set(interaction::BlockInteractSet),
+                    interaction::eat_food.after(interaction::BlockInteractSet),
                     interaction::hoe_interact
                         .after(interaction::BlockInteractSet)
                         .after(interaction::eat_food),
-                    interaction::plant_seeds
-                        .after(interaction::hoe_interact),
+                    interaction::plant_seeds.after(interaction::hoe_interact),
                     interaction::place_block
                         .after(interaction::BlockInteractSet)
                         .after(interaction::eat_food)
@@ -118,7 +113,11 @@ impl Default for ArmorSlots {
 impl ArmorSlots {
     /// Total armor defense points from all worn pieces.
     pub fn total_armor_points(&self) -> u8 {
-        self.slots.iter().filter_map(|s| s.as_ref()).map(|(item, _, _)| item.armor_points()).sum()
+        self.slots
+            .iter()
+            .filter_map(|s| s.as_ref())
+            .map(|(item, _, _)| item.armor_points())
+            .sum()
     }
 
     /// Damage all worn armor pieces by 1 durability each. Returns true if any piece broke.
@@ -150,7 +149,10 @@ pub struct Health {
 
 impl Default for Health {
     fn default() -> Self {
-        Self { current: 20.0, max: 20.0 }
+        Self {
+            current: 20.0,
+            max: 20.0,
+        }
     }
 }
 
@@ -167,7 +169,10 @@ pub struct AirSupply {
 
 impl Default for AirSupply {
     fn default() -> Self {
-        Self { current: 10.0, max: 10.0 }
+        Self {
+            current: 10.0,
+            max: 10.0,
+        }
     }
 }
 
@@ -203,7 +208,11 @@ fn spawn_player(
 
     let (pos, yaw, pitch, health, air, food_level, saturation) = if let Some(ref data) = save {
         // Restore spawn point from save
-        if let (Some(&sx), Some(&sy), Some(&sz)) = (data.spawn_x.as_ref(), data.spawn_y.as_ref(), data.spawn_z.as_ref()) {
+        if let (Some(&sx), Some(&sy), Some(&sz)) = (
+            data.spawn_x.as_ref(),
+            data.spawn_y.as_ref(),
+            data.spawn_z.as_ref(),
+        ) {
             spawn_point.0 = Vec3::new(sx, sy, sz);
         }
         (
@@ -244,10 +253,20 @@ fn spawn_player(
             OnGround(false),
             PlayerYaw(yaw),
             PlayerPitch(pitch),
-            Health { current: health, max: 20.0 },
+            Health {
+                current: health,
+                max: 20.0,
+            },
             FallTracker::default(),
-            AirSupply { current: air, max: 10.0 },
-            Hunger { food_level, saturation, exhaustion: 0.0 },
+            AirSupply {
+                current: air,
+                max: 10.0,
+            },
+            Hunger {
+                food_level,
+                saturation,
+                exhaustion: 0.0,
+            },
             JustJumped::default(),
             Sneaking::default(),
             armor,

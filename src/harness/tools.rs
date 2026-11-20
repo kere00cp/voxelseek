@@ -5,7 +5,7 @@
 //! give, teleport, set time). Every call is logged in the on-screen console.
 
 use bevy::prelude::*;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use crate::block::BlockType;
 use crate::inventory::inventory::Inventory;
@@ -111,11 +111,39 @@ pub fn block_name(block: BlockType) -> &'static str {
 
 /// All block names the harness understands (used in the system prompt).
 pub const BLOCK_NAMES: &[&str] = &[
-    "air", "stone", "dirt", "grass_block", "cobblestone", "oak_planks", "sand", "gravel",
-    "oak_log", "oak_leaves", "glass", "coal_ore", "iron_ore", "gold_ore", "diamond_ore",
-    "bedrock", "water", "crafting_table", "furnace", "torch", "snow", "clay", "sandstone",
-    "birch_log", "birch_leaves", "tall_grass", "chest", "bed", "oak_door", "oak_sapling",
-    "birch_sapling", "farmland", "wheat",
+    "air",
+    "stone",
+    "dirt",
+    "grass_block",
+    "cobblestone",
+    "oak_planks",
+    "sand",
+    "gravel",
+    "oak_log",
+    "oak_leaves",
+    "glass",
+    "coal_ore",
+    "iron_ore",
+    "gold_ore",
+    "diamond_ore",
+    "bedrock",
+    "water",
+    "crafting_table",
+    "furnace",
+    "torch",
+    "snow",
+    "clay",
+    "sandstone",
+    "birch_log",
+    "birch_leaves",
+    "tall_grass",
+    "chest",
+    "bed",
+    "oak_door",
+    "oak_sapling",
+    "birch_sapling",
+    "farmland",
+    "wheat",
 ];
 
 /// Parse a snake_case item name into an [`Item`]. Block names map to the
@@ -185,17 +213,57 @@ pub fn item_from_name(name: &str) -> Option<Item> {
 
 /// All item names the harness understands (used in the system prompt).
 pub const ITEM_NAMES: &[&str] = &[
-    "stick", "coal", "iron_ingot", "gold_ingot", "diamond",
-    "wooden_pickaxe", "wooden_axe", "wooden_shovel", "wooden_sword",
-    "stone_pickaxe", "stone_axe", "stone_shovel", "stone_sword",
-    "iron_pickaxe", "iron_axe", "iron_shovel", "iron_sword",
-    "diamond_pickaxe", "diamond_axe", "diamond_shovel", "diamond_sword",
-    "apple", "bread", "cooked_porkchop", "raw_porkchop", "raw_beef", "cooked_beef",
-    "leather", "raw_mutton", "cooked_mutton", "wool", "rotten_flesh", "bone",
-    "wooden_hoe", "stone_hoe", "iron_hoe", "diamond_hoe", "seeds", "wheat",
-    "leather_helmet", "leather_chestplate", "leather_leggings", "leather_boots",
-    "iron_helmet", "iron_chestplate", "iron_leggings", "iron_boots",
-    "diamond_helmet", "diamond_chestplate", "diamond_leggings", "diamond_boots",
+    "stick",
+    "coal",
+    "iron_ingot",
+    "gold_ingot",
+    "diamond",
+    "wooden_pickaxe",
+    "wooden_axe",
+    "wooden_shovel",
+    "wooden_sword",
+    "stone_pickaxe",
+    "stone_axe",
+    "stone_shovel",
+    "stone_sword",
+    "iron_pickaxe",
+    "iron_axe",
+    "iron_shovel",
+    "iron_sword",
+    "diamond_pickaxe",
+    "diamond_axe",
+    "diamond_shovel",
+    "diamond_sword",
+    "apple",
+    "bread",
+    "cooked_porkchop",
+    "raw_porkchop",
+    "raw_beef",
+    "cooked_beef",
+    "leather",
+    "raw_mutton",
+    "cooked_mutton",
+    "wool",
+    "rotten_flesh",
+    "bone",
+    "wooden_hoe",
+    "stone_hoe",
+    "iron_hoe",
+    "diamond_hoe",
+    "seeds",
+    "wheat",
+    "leather_helmet",
+    "leather_chestplate",
+    "leather_leggings",
+    "leather_boots",
+    "iron_helmet",
+    "iron_chestplate",
+    "iron_leggings",
+    "iron_boots",
+    "diamond_helmet",
+    "diamond_chestplate",
+    "diamond_leggings",
+    "diamond_boots",
 ];
 
 // ---------------------------------------------------------------------------
@@ -355,11 +423,7 @@ pub fn system_prompt() -> String {
 
 fn get_block(store: &ChunkDataStore, x: i32, y: i32, z: i32) -> BlockType {
     let size = CHUNK_SIZE as i32;
-    let chunk_pos = IVec3::new(
-        x.div_euclid(size),
-        y.div_euclid(size),
-        z.div_euclid(size),
-    );
+    let chunk_pos = IVec3::new(x.div_euclid(size), y.div_euclid(size), z.div_euclid(size));
     let Some(chunk) = store.chunks.get(&chunk_pos) else {
         return BlockType::Air;
     };
@@ -409,7 +473,9 @@ fn check_y(y: i32) -> Result<(), String> {
     if (MIN_Y..MAX_Y).contains(&y) {
         Ok(())
     } else {
-        Err(format!("y={y} is out of the supported range [{MIN_Y}, {MAX_Y})"))
+        Err(format!(
+            "y={y} is out of the supported range [{MIN_Y}, {MAX_Y})"
+        ))
     }
 }
 
@@ -432,7 +498,11 @@ pub fn execute(call: &PendingCall, ctx: &mut ToolContext) -> String {
             let p = ctx.player_pos;
             format!("player is at x={:.1}, y={:.1}, z={:.1}", p.x, p.y, p.z)
         }
-        "teleport" => match (arg_f64(&call.args, "x"), arg_f64(&call.args, "y"), arg_f64(&call.args, "z")) {
+        "teleport" => match (
+            arg_f64(&call.args, "x"),
+            arg_f64(&call.args, "y"),
+            arg_f64(&call.args, "z"),
+        ) {
             (Ok(x), Ok(y), Ok(z)) => {
                 if y < MIN_Y as f64 || y > MAX_Y as f64 {
                     return format!("error: y={y} is out of the supported range");
@@ -477,7 +547,10 @@ fn exec_place(call: &PendingCall, ctx: &mut ToolContext) -> String {
     let Some(block) = block_from_name(block) else {
         return "error: unknown block name".into();
     };
-    if matches!(block, BlockType::Air | BlockType::Water | BlockType::Bedrock) {
+    if matches!(
+        block,
+        BlockType::Air | BlockType::Water | BlockType::Bedrock
+    ) {
         return "error: place_block only supports solid placeable blocks (no air/water/bedrock)"
             .into();
     }
@@ -551,7 +624,10 @@ fn exec_break(call: &PendingCall, ctx: &mut ToolContext) -> String {
         let other_block = get_block(ctx.store, other.x, other.y, other.z);
         if matches!(
             other_block,
-            BlockType::DoorBottom | BlockType::DoorTop | BlockType::DoorBottomOpen | BlockType::DoorTopOpen
+            BlockType::DoorBottom
+                | BlockType::DoorTop
+                | BlockType::DoorBottomOpen
+                | BlockType::DoorTopOpen
         ) {
             set_block(ctx.store, other, BlockType::Air);
             ctx.remesh.push(other);
@@ -580,7 +656,10 @@ fn exec_fill(call: &PendingCall, ctx: &mut ToolContext) -> String {
     }
     if matches!(
         block,
-        BlockType::DoorBottom | BlockType::DoorTop | BlockType::DoorBottomOpen | BlockType::DoorTopOpen
+        BlockType::DoorBottom
+            | BlockType::DoorTop
+            | BlockType::DoorBottomOpen
+            | BlockType::DoorTopOpen
     ) {
         return "error: fill does not support doors; use place_block".into();
     }
@@ -617,11 +696,15 @@ fn exec_fill(call: &PendingCall, ctx: &mut ToolContext) -> String {
     }
     // Remesh every chunk the box touches (dedup happens downstream).
     let size_i = CHUNK_SIZE as i32;
-    let (cmin, cmax) = (world_to_chunk_pos(min.as_vec3()), world_to_chunk_pos(max.as_vec3()));
+    let (cmin, cmax) = (
+        world_to_chunk_pos(min.as_vec3()),
+        world_to_chunk_pos(max.as_vec3()),
+    );
     for cx in cmin.x..=cmax.x {
         for cy in cmin.y..=cmax.y {
             for cz in cmin.z..=cmax.z {
-                ctx.remesh.push(IVec3::new(cx * size_i, cy * size_i, cz * size_i));
+                ctx.remesh
+                    .push(IVec3::new(cx * size_i, cy * size_i, cz * size_i));
             }
         }
     }

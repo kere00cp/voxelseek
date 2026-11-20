@@ -88,7 +88,11 @@ pub fn update_console_ui(
         return;
     }
     if let Ok(mut node) = root_q.single_mut() {
-        node.display = if console.open { Display::Flex } else { Display::None };
+        node.display = if console.open {
+            Display::Flex
+        } else {
+            Display::None
+        };
     }
     if !console.open {
         return;
@@ -321,7 +325,9 @@ pub fn console_keyboard_input(
             "content": tools::system_prompt(),
         }));
     }
-    history.messages.push(json!({"role": "user", "content": text}));
+    history
+        .messages
+        .push(json!({"role": "user", "content": text}));
     history.rounds = 0;
     history.trim();
 
@@ -365,7 +371,9 @@ pub fn poll_network(
             console.push(ChatLine::system(format!("Error: {e}")));
         }
         ApiOutcome::Final { content } => {
-            history.messages.push(json!({"role": "assistant", "content": content.clone()}));
+            history
+                .messages
+                .push(json!({"role": "assistant", "content": content.clone()}));
             history.rounds = 0;
             history.trim();
             console.push(ChatLine::assistant(&content));
@@ -381,10 +389,7 @@ pub fn poll_network(
             let mut remesh = Vec::new();
 
             for call in &calls {
-                console.push(ChatLine::tool(format!(
-                    "{}({})",
-                    call.name, call.args
-                )));
+                console.push(ChatLine::tool(format!("{}({})", call.name, call.args)));
                 let mut ctx = tools::ToolContext {
                     store: &mut access.store,
                     inventory: &mut access.inventory,

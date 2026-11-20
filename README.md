@@ -104,13 +104,20 @@ launcher/       # voxelseek-launcher (egui)
 mods/           # mods live here (example-hello bundled)
 assets/packs/   # open-licensed resource packs (each with LICENSE.txt)
 docs/           # harness / mods / launcher / resource-pack guides
+research/       # design notes written while porting the engine — not a spec
 ```
 
 ## Legal
 
 - Code: **MIT** (see [LICENSE](LICENSE))
+- Upstream **MineClaude**: MIT declared in its README, **no LICENSE file in the
+  repository** — the situation is recorded verbatim in
+  [LICENSE.upstream-mineclaude](LICENSE.upstream-mineclaude). If the upstream
+  author objects or later publishes a different license, that license wins.
 - Textures & sounds: open licenses, per-pack details in
   [ATTRIBUTION.md](ATTRIBUTION.md)
+- Screenshots in `assets/screenshots/` come from the upstream MineClaude
+  project (MIT).
 - DeepSeek is a third-party service; API use is subject to DeepSeek's terms.
   The assistant can modify your local world — review the tool list in
   [docs/harness.md](docs/harness.md).

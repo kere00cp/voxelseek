@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 
-use crate::inventory::crafting::{self, CraftingGrid, CRAFTING_GRID_SIZE};
-use crate::inventory::inventory::{Inventory, INVENTORY_COLS, INVENTORY_SLOTS};
-use crate::inventory::item::Item;
 use super::UiAtlas;
 use super::common::*;
+use crate::inventory::crafting::{self, CRAFTING_GRID_SIZE, CraftingGrid};
+use crate::inventory::inventory::{INVENTORY_COLS, INVENTORY_SLOTS, Inventory};
+use crate::inventory::item::Item;
 
 #[derive(Resource, Default)]
 pub struct InventoryOpen(pub bool);
@@ -75,7 +75,10 @@ pub fn spawn_cursor_item_display(mut commands: Commands, atlas: Res<UiAtlas>) {
                 CursorItemCount,
                 Text::new(""),
                 TextColor(Color::WHITE),
-                TextFont { font_size: 11.0, ..default() },
+                TextFont {
+                    font_size: 11.0,
+                    ..default()
+                },
                 Node {
                     position_type: PositionType::Absolute,
                     right: Val::Px(0.0),
@@ -187,8 +190,14 @@ pub fn spawn_inventory_ui(
                         col.spawn((
                             Text::new("Armor"),
                             TextColor(Color::WHITE),
-                            TextFont { font_size: 14.0, ..default() },
-                            Node { margin: UiRect::bottom(Val::Px(4.0)), ..default() },
+                            TextFont {
+                                font_size: 14.0,
+                                ..default()
+                            },
+                            Node {
+                                margin: UiRect::bottom(Val::Px(4.0)),
+                                ..default()
+                            },
                         ));
                         for i in 0..4 {
                             let data = armor_slots.and_then(|a| a.slots[i]);
@@ -221,9 +230,16 @@ pub fn spawn_inventory_ui(
                                 .with_children(|bp| {
                                     bp.spawn((
                                         ArmorSlotCount(i),
-                                        Text::new(if data.is_some() { armor_labels[i].to_string() } else { armor_labels[i].to_string() }),
+                                        Text::new(if data.is_some() {
+                                            armor_labels[i].to_string()
+                                        } else {
+                                            armor_labels[i].to_string()
+                                        }),
                                         TextColor(Color::srgba(0.6, 0.6, 0.6, 0.8)),
-                                        TextFont { font_size: 8.0, ..default() },
+                                        TextFont {
+                                            font_size: 8.0,
+                                            ..default()
+                                        },
                                     ));
                                 });
                             });
@@ -245,8 +261,14 @@ pub fn spawn_inventory_ui(
                     crafting_row.spawn((
                         Text::new("Crafting"),
                         TextColor(Color::WHITE),
-                        TextFont { font_size: 16.0, ..default() },
-                        Node { margin: UiRect::right(Val::Px(8.0)), ..default() },
+                        TextFont {
+                            font_size: 16.0,
+                            ..default()
+                        },
+                        Node {
+                            margin: UiRect::right(Val::Px(8.0)),
+                            ..default()
+                        },
                     ));
 
                     // 2x2 crafting grid
@@ -301,7 +323,10 @@ pub fn spawn_inventory_ui(
                                                         CraftingSlotCount(slot_idx),
                                                         Text::new(count_text(&data)),
                                                         TextColor(Color::WHITE),
-                                                        TextFont { font_size: 11.0, ..default() },
+                                                        TextFont {
+                                                            font_size: 11.0,
+                                                            ..default()
+                                                        },
                                                     ));
                                                 });
                                             });
@@ -314,8 +339,14 @@ pub fn spawn_inventory_ui(
                     crafting_row.spawn((
                         Text::new("=>"),
                         TextColor(Color::srgba(0.8, 0.8, 0.8, 0.9)),
-                        TextFont { font_size: 20.0, ..default() },
-                        Node { margin: UiRect::horizontal(Val::Px(8.0)), ..default() },
+                        TextFont {
+                            font_size: 20.0,
+                            ..default()
+                        },
+                        Node {
+                            margin: UiRect::horizontal(Val::Px(8.0)),
+                            ..default()
+                        },
                     ));
 
                     // Output slot
@@ -352,7 +383,10 @@ pub fn spawn_inventory_ui(
                                     CraftingOutputCount,
                                     Text::new(count_text(&output)),
                                     TextColor(Color::WHITE),
-                                    TextFont { font_size: 11.0, ..default() },
+                                    TextFont {
+                                        font_size: 11.0,
+                                        ..default()
+                                    },
                                 ));
                             });
                         });
@@ -371,8 +405,14 @@ pub fn spawn_inventory_ui(
                     grid.spawn((
                         Text::new("Inventory"),
                         TextColor(Color::WHITE),
-                        TextFont { font_size: 18.0, ..default() },
-                        Node { margin: UiRect::bottom(Val::Px(8.0)), ..default() },
+                        TextFont {
+                            font_size: 18.0,
+                            ..default()
+                        },
+                        Node {
+                            margin: UiRect::bottom(Val::Px(8.0)),
+                            ..default()
+                        },
                     ));
 
                     for row in 0..rows {
@@ -421,20 +461,24 @@ pub fn spawn_inventory_ui(
                                             slot_image(&atlas, &data),
                                             slot_bg(&data),
                                         ))
-                                        .with_children(|bp| {
-                                            bp.spawn((
-                                                InventorySlotCount(slot_idx),
-                                                Text::new(count_text(&data)),
-                                                TextColor(Color::WHITE),
-                                                TextFont { font_size: 11.0, ..default() },
-                                            ));
-                                        });
+                                        .with_children(
+                                            |bp| {
+                                                bp.spawn((
+                                                    InventorySlotCount(slot_idx),
+                                                    Text::new(count_text(&data)),
+                                                    TextColor(Color::WHITE),
+                                                    TextFont {
+                                                        font_size: 11.0,
+                                                        ..default()
+                                                    },
+                                                ));
+                                            },
+                                        );
                                     });
                             }
                         });
                     }
                 });
-
         });
 }
 
@@ -531,7 +575,8 @@ pub fn crafting_output_interaction(
                     if held.0 != output.0 {
                         info!(
                             "[CRAFT] crafting_output_interaction (2x2): cursor {} doesn't match output {}",
-                            held.0.display_name(), output.0.display_name(),
+                            held.0.display_name(),
+                            output.0.display_name(),
                         );
                         return;
                     }
@@ -547,7 +592,8 @@ pub fn crafting_output_interaction(
 
                 info!(
                     "[CRAFT] crafting_output_interaction (2x2): taking output {}x{}",
-                    output.0.display_name(), output.1,
+                    output.0.display_name(),
+                    output.1,
                 );
 
                 for slot in crafting_grid.slots.iter_mut() {
@@ -569,7 +615,9 @@ pub fn crafting_output_interaction(
                 crafting_grid.output = crafting::check_recipes(&crafting_grid);
                 info!(
                     "[CRAFT] crafting_output_interaction (2x2): new output={:?}",
-                    crafting_grid.output.map(|(i, c, _)| format!("{}x{}", i.display_name(), c)),
+                    crafting_grid
+                        .output
+                        .map(|(i, c, _)| format!("{}x{}", i.display_name(), c)),
                 );
                 return;
             }
@@ -585,11 +633,14 @@ pub fn armor_slot_interaction(
     interaction_q: Query<(&Interaction, &Children)>,
     mut armor_q: Query<&mut crate::player::ArmorSlots, With<crate::player::Player>>,
 ) {
-    let Ok(mut armor) = armor_q.single_mut() else { return };
+    let Ok(mut armor) = armor_q.single_mut() else {
+        return;
+    };
 
     for (interaction, children) in &interaction_q {
         let clicked = *interaction == Interaction::Pressed
-            || (*interaction == Interaction::Hovered && mouse_buttons.just_pressed(MouseButton::Right));
+            || (*interaction == Interaction::Hovered
+                && mouse_buttons.just_pressed(MouseButton::Right));
         if !clicked {
             continue;
         }
@@ -623,12 +674,38 @@ pub fn update_inventory_ui(
     crafting_grid: Res<CraftingGrid>,
     cursor_item: Res<CursorItem>,
     atlas: Res<UiAtlas>,
-    mut inv_slots: Query<(&InventorySlot, &mut ImageNode, &mut BackgroundColor), Without<CraftingSlot>>,
-    mut inv_counts: Query<(&InventorySlotCount, &mut Text), (Without<CraftingSlotCount>, Without<CraftingOutputCount>)>,
-    mut craft_slots: Query<(&CraftingSlot, &mut ImageNode, &mut BackgroundColor), Without<InventorySlot>>,
-    mut craft_counts: Query<(&CraftingSlotCount, &mut Text), (Without<InventorySlotCount>, Without<CraftingOutputCount>)>,
-    mut output_slot: Query<(&mut ImageNode, &mut BackgroundColor), (With<CraftingOutputSlot>, Without<InventorySlot>, Without<CraftingSlot>)>,
-    mut output_count: Query<&mut Text, (With<CraftingOutputCount>, Without<InventorySlotCount>, Without<CraftingSlotCount>)>,
+    mut inv_slots: Query<
+        (&InventorySlot, &mut ImageNode, &mut BackgroundColor),
+        Without<CraftingSlot>,
+    >,
+    mut inv_counts: Query<
+        (&InventorySlotCount, &mut Text),
+        (Without<CraftingSlotCount>, Without<CraftingOutputCount>),
+    >,
+    mut craft_slots: Query<
+        (&CraftingSlot, &mut ImageNode, &mut BackgroundColor),
+        Without<InventorySlot>,
+    >,
+    mut craft_counts: Query<
+        (&CraftingSlotCount, &mut Text),
+        (Without<InventorySlotCount>, Without<CraftingOutputCount>),
+    >,
+    mut output_slot: Query<
+        (&mut ImageNode, &mut BackgroundColor),
+        (
+            With<CraftingOutputSlot>,
+            Without<InventorySlot>,
+            Without<CraftingSlot>,
+        ),
+    >,
+    mut output_count: Query<
+        &mut Text,
+        (
+            With<CraftingOutputCount>,
+            Without<InventorySlotCount>,
+            Without<CraftingSlotCount>,
+        ),
+    >,
 ) {
     let inv_changed = inventory.is_changed();
     let craft_changed = crafting_grid.is_changed();
@@ -683,7 +760,15 @@ pub fn update_cursor_item_display(
     cursor_item: Res<CursorItem>,
     atlas: Res<UiAtlas>,
     windows: Query<&Window, With<PrimaryWindow>>,
-    mut display_q: Query<(&mut Node, &mut ImageNode, &mut BackgroundColor, &mut Visibility), With<CursorItemDisplay>>,
+    mut display_q: Query<
+        (
+            &mut Node,
+            &mut ImageNode,
+            &mut BackgroundColor,
+            &mut Visibility,
+        ),
+        With<CursorItemDisplay>,
+    >,
     mut count_q: Query<&mut Text, With<CursorItemCount>>,
 ) {
     let Ok((mut node, mut img, mut bg, mut vis)) = display_q.single_mut() else {
@@ -701,7 +786,11 @@ pub fn update_cursor_item_display(
                 }
             }
             if let Ok(mut text) = count_q.single_mut() {
-                **text = if *count > 1 { format!("{}", count) } else { String::new() };
+                **text = if *count > 1 {
+                    format!("{}", count)
+                } else {
+                    String::new()
+                };
             }
         }
         None => {

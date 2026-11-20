@@ -5,7 +5,9 @@ use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 use crate::inventory::chest::ChestOpen;
 use crate::inventory::crafting::{CraftingGrid, CraftingTableGrid, CraftingTableOpen};
 use crate::inventory::furnace::FurnaceOpen;
-use crate::player::{Player, Health, Velocity, AirSupply, Hunger, SpawnPoint, FallTracker, ArmorSlots};
+use crate::player::{
+    AirSupply, ArmorSlots, FallTracker, Health, Hunger, Player, SpawnPoint, Velocity,
+};
 use crate::ui::inventory_screen::{CursorItem, InventoryOpen};
 
 /// Resource tracking whether the player is currently dead.
@@ -141,7 +143,18 @@ pub fn respawn_button_interaction(
     spawn: Res<SpawnPoint>,
     mut cursor_q: Query<&mut CursorOptions, With<PrimaryWindow>>,
     button_q: Query<(&Interaction, &RespawnButton), Changed<Interaction>>,
-    mut player_q: Query<(&mut Transform, &mut Health, &mut Velocity, &mut AirSupply, &mut Hunger, &mut FallTracker, &mut ArmorSlots), With<Player>>,
+    mut player_q: Query<
+        (
+            &mut Transform,
+            &mut Health,
+            &mut Velocity,
+            &mut AirSupply,
+            &mut Hunger,
+            &mut FallTracker,
+            &mut ArmorSlots,
+        ),
+        With<Player>,
+    >,
     mut inventory_open: ResMut<InventoryOpen>,
     mut furnace_open: ResMut<FurnaceOpen>,
     mut ct_open: ResMut<CraftingTableOpen>,
@@ -156,7 +169,9 @@ pub fn respawn_button_interaction(
         }
 
         // Reset player state
-        if let Ok((mut tf, mut health, mut vel, mut air, mut hunger, mut fall, mut armor)) = player_q.single_mut() {
+        if let Ok((mut tf, mut health, mut vel, mut air, mut hunger, mut fall, mut armor)) =
+            player_q.single_mut()
+        {
             tf.translation = spawn.0;
             health.current = health.max;
             vel.0 = Vec3::ZERO;

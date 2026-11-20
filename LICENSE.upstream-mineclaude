@@ -1,1 +1,29 @@
-404: Not Found
+# Upstream: MineClaude
+
+VoxelSeek 是在 MineClaude 的基础上继续开发的。这里把上游的情况原样记下来，
+因为它的授权状态比较特殊。
+
+## 上游
+
+- 仓库：https://github.com/snek-git/mineclaude
+- 基线提交：3b278d25a2ce356e54857fdb482b2b6b7b0271a5
+- 导入时（2026-11-20）该仓库 star 数：0
+
+## 授权状态（重要）
+
+上游仓库没有 LICENSE 文件，但它的 README 里明确写着：
+
+    ## License
+
+    MIT
+
+所以我们按 MIT 继承，并在本项目 LICENSE 里保留了 "MineClaude contributors" 的署名。
+
+严格说，这是声明式授权：没有许可证文件，只有 README 里的一行声明。
+如果上游作者对此有异议，或后续补上了不同的许可证文件，请按上游的最终声明为准。
+
+## 我们做了什么
+
+- 保留上游的 MIT 署名（LICENSE、ATTRIBUTION.md）
+- 新增代码（DeepSeek harness、Rhai 模组接口、egui 启动器、资源包系统）同样以 MIT 发布
+- 公开仓库里不包含任何 Minecraft 官方素材；贴图来自三个明确授权的开源资源包

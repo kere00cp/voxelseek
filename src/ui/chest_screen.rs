@@ -1,11 +1,11 @@
 use bevy::prelude::*;
 use bevy::window::{CursorGrabMode, CursorOptions, PrimaryWindow};
 
-use crate::inventory::chest::{ChestOpen, ChestStore, CHEST_SLOTS};
-use crate::inventory::inventory::{Inventory, INVENTORY_COLS, INVENTORY_SLOTS};
-use crate::ui::inventory_screen::CursorItem;
 use super::UiAtlas;
 use super::common::*;
+use crate::inventory::chest::{CHEST_SLOTS, ChestOpen, ChestStore};
+use crate::inventory::inventory::{INVENTORY_COLS, INVENTORY_SLOTS, Inventory};
+use crate::ui::inventory_screen::CursorItem;
 
 const CHEST_COLS: usize = 9;
 const CHEST_ROWS: usize = 3;
@@ -100,8 +100,14 @@ pub fn spawn_chest_ui(
             parent.spawn((
                 Text::new("Chest"),
                 TextColor(Color::WHITE),
-                TextFont { font_size: 20.0, ..default() },
-                Node { margin: UiRect::bottom(Val::Px(4.0)), ..default() },
+                TextFont {
+                    font_size: 20.0,
+                    ..default()
+                },
+                Node {
+                    margin: UiRect::bottom(Val::Px(4.0)),
+                    ..default()
+                },
             ));
 
             // Chest slots: 3 rows x 9 cols
@@ -123,8 +129,7 @@ pub fn spawn_chest_ui(
                         .with_children(|row_node| {
                             for col in 0..CHEST_COLS {
                                 let slot_idx = row * CHEST_COLS + col;
-                                let data = chest_data
-                                    .and_then(|d| d.slots[slot_idx]);
+                                let data = chest_data.and_then(|d| d.slots[slot_idx]);
 
                                 row_node
                                     .spawn((
@@ -153,14 +158,19 @@ pub fn spawn_chest_ui(
                                             slot_image(&atlas, &data),
                                             slot_bg(&data),
                                         ))
-                                        .with_children(|bp| {
-                                            bp.spawn((
-                                                ChestSlotCount(slot_idx),
-                                                Text::new(count_text(&data)),
-                                                TextColor(Color::WHITE),
-                                                TextFont { font_size: 11.0, ..default() },
-                                            ));
-                                        });
+                                        .with_children(
+                                            |bp| {
+                                                bp.spawn((
+                                                    ChestSlotCount(slot_idx),
+                                                    Text::new(count_text(&data)),
+                                                    TextColor(Color::WHITE),
+                                                    TextFont {
+                                                        font_size: 11.0,
+                                                        ..default()
+                                                    },
+                                                ));
+                                            },
+                                        );
                                     });
                             }
                         });
@@ -171,8 +181,14 @@ pub fn spawn_chest_ui(
             parent.spawn((
                 Text::new("Inventory"),
                 TextColor(Color::WHITE),
-                TextFont { font_size: 16.0, ..default() },
-                Node { margin: UiRect::vertical(Val::Px(4.0)), ..default() },
+                TextFont {
+                    font_size: 16.0,
+                    ..default()
+                },
+                Node {
+                    margin: UiRect::vertical(Val::Px(4.0)),
+                    ..default()
+                },
             ));
 
             // Player inventory: 4 rows x 9 cols
@@ -230,14 +246,19 @@ pub fn spawn_chest_ui(
                                             slot_image(&atlas, &data),
                                             slot_bg(&data),
                                         ))
-                                        .with_children(|bp| {
-                                            bp.spawn((
-                                                ChestInvSlotCount(slot_idx),
-                                                Text::new(count_text(&data)),
-                                                TextColor(Color::WHITE),
-                                                TextFont { font_size: 11.0, ..default() },
-                                            ));
-                                        });
+                                        .with_children(
+                                            |bp| {
+                                                bp.spawn((
+                                                    ChestInvSlotCount(slot_idx),
+                                                    Text::new(count_text(&data)),
+                                                    TextColor(Color::WHITE),
+                                                    TextFont {
+                                                        font_size: 11.0,
+                                                        ..default()
+                                                    },
+                                                ));
+                                            },
+                                        );
                                     });
                             }
                         });
@@ -339,7 +360,10 @@ pub fn update_chest_ui(
     chest_open: Res<ChestOpen>,
     inventory: Res<Inventory>,
     atlas: Res<UiAtlas>,
-    mut chest_slots: Query<(&ChestSlot, &mut ImageNode, &mut BackgroundColor), Without<ChestInvSlot>>,
+    mut chest_slots: Query<
+        (&ChestSlot, &mut ImageNode, &mut BackgroundColor),
+        Without<ChestInvSlot>,
+    >,
     mut chest_counts: Query<(&ChestSlotCount, &mut Text), Without<ChestInvSlotCount>>,
     mut inv_slots: Query<(&ChestInvSlot, &mut ImageNode, &mut BackgroundColor), Without<ChestSlot>>,
     mut inv_counts: Query<(&ChestInvSlotCount, &mut Text), Without<ChestSlotCount>>,

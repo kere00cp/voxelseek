@@ -1,4 +1,4 @@
-use image::{GenericImageView, RgbaImage, Rgba};
+use image::{GenericImageView, Rgba, RgbaImage};
 use std::path::{Path, PathBuf};
 
 const ATLAS_SIZE: u32 = 256;
@@ -25,7 +25,7 @@ const TILE_SOURCES: &[(u32, &str)] = &[
     (14, "gold_ore.png"),
     (15, "diamond_ore.png"),
     (16, "bedrock.png"),
-    (17, "water.png"),           // animated spritesheet — we take the first 16x16 frame
+    (17, "water.png"), // animated spritesheet — we take the first 16x16 frame
     (18, "crafting_table_top.png"),
     (19, "crafting_table_side.png"),
     (20, "furnace_top.png"),
@@ -67,9 +67,9 @@ fn biome_tint(tile_index: u32) -> Option<(u8, u8, u8)> {
     match tile_index {
         2 => Some((124, 189, 107)),  // grass_top — plains green
         3 => Some((124, 189, 107)),  // grass_side — plains green
-        10 => Some((119, 171, 47)), // oak_leaves — plains green
-        17 => Some((63, 118, 228)), // water — default blue
-        30 => Some((128, 167, 85)), // birch_leaves — birch green
+        10 => Some((119, 171, 47)),  // oak_leaves — plains green
+        17 => Some((63, 118, 228)),  // water — default blue
+        30 => Some((128, 167, 85)),  // birch_leaves — birch green
         50 => Some((124, 189, 107)), // tallgrass — plains green
         _ => None,
     }
@@ -96,7 +96,8 @@ fn generate_crack_textures() {
         for y in 0..16u32 {
             for x in 0..16u32 {
                 // Deterministic hash for consistent pattern
-                let mut h = x.wrapping_mul(374761393)
+                let mut h = x
+                    .wrapping_mul(374761393)
                     .wrapping_add(y.wrapping_mul(668265263))
                     .wrapping_add(stage.wrapping_mul(2147483647));
                 h = (h ^ (h >> 13)).wrapping_mul(1274126177);
@@ -158,9 +159,9 @@ fn build_atlas(pack_dir: &Path, fallback_dir: &Path, out_path: &Path) {
         }
     }
 
-    atlas.save(out_path).unwrap_or_else(|e| {
-        panic!("Failed to save {}: {}", out_path.display(), e)
-    });
+    atlas
+        .save(out_path)
+        .unwrap_or_else(|e| panic!("Failed to save {}: {}", out_path.display(), e));
 }
 
 fn main() {

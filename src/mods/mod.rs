@@ -41,7 +41,7 @@
 //! (`disabled_mods` in `voxelseek.toml`).
 
 use bevy::prelude::*;
-use rhai::{Engine, Scope, AST};
+use rhai::{AST, Engine, Scope};
 use serde::Deserialize;
 use std::collections::VecDeque;
 use std::path::PathBuf;
@@ -91,10 +91,22 @@ pub struct BlockBrokenMsg {
 /// World mutations queued by scripts, applied on the main thread.
 #[derive(Debug)]
 enum ModOp {
-    SetBlock { pos: IVec3, block: BlockType },
-    Fill { min: IVec3, max: IVec3, block: BlockType },
-    Give { item: crate::inventory::item::Item, count: usize },
-    Teleport { pos: Vec3 },
+    SetBlock {
+        pos: IVec3,
+        block: BlockType,
+    },
+    Fill {
+        min: IVec3,
+        max: IVec3,
+        block: BlockType,
+    },
+    Give {
+        item: crate::inventory::item::Item,
+        count: usize,
+    },
+    Teleport {
+        pos: Vec3,
+    },
     SetTime(f32),
     Chat(String),
     Log(String),
@@ -203,12 +215,7 @@ impl ModRuntime {
     pub fn loaded_names(&self) -> Vec<String> {
         self.mods
             .iter()
-            .map(|m| {
-                m.meta
-                    .name
-                    .clone()
-                    .unwrap_or_else(|| m.meta.id.clone())
-            })
+            .map(|m| m.meta.name.clone().unwrap_or_else(|| m.meta.id.clone()))
             .collect()
     }
 }
@@ -252,18 +259,23 @@ fn build_engine(outbox: SharedOutbox, snapshot: SharedSnapshot) -> Engine {
     }
     {
         let ob = outbox.clone();
-        engine.register_fn("set_block", move |x: i64, y: i64, z: i64, block: &str| -> bool {
-            match tools::block_from_name(block) {
-                Some(b) if !matches!(b, BlockType::Air | BlockType::Water | BlockType::Bedrock) => {
-                    ob.lock().unwrap().push(ModOp::SetBlock {
-                        pos: IVec3::new(x as i32, y as i32, z as i32),
-                        block: b,
-                    });
-                    true
+        engine.register_fn(
+            "set_block",
+            move |x: i64, y: i64, z: i64, block: &str| -> bool {
+                match tools::block_from_name(block) {
+                    Some(b)
+                        if !matches!(b, BlockType::Air | BlockType::Water | BlockType::Bedrock) =>
+                    {
+                        ob.lock().unwrap().push(ModOp::SetBlock {
+                            pos: IVec3::new(x as i32, y as i32, z as i32),
+                            block: b,
+                        });
+                        true
+                    }
+                    _ => false,
                 }
-                _ => false,
-            }
-        });
+            },
+        );
     }
     {
         let ob = outbox.clone();
@@ -274,8 +286,16 @@ fn build_engine(outbox: SharedOutbox, snapshot: SharedSnapshot) -> Engine {
                     return -1;
                 };
                 let (min, max) = (
-                    IVec3::new((x1 as i32).min(x2 as i32), (y1 as i32).min(y2 as i32), (z1 as i32).min(z2 as i32)),
-                    IVec3::new((x1 as i32).max(x2 as i32), (y1 as i32).max(y2 as i32), (z1 as i32).max(z2 as i32)),
+                    IVec3::new(
+                        (x1 as i32).min(x2 as i32),
+                        (y1 as i32).min(y2 as i32),
+                        (z1 as i32).min(z2 as i32),
+                    ),
+                    IVec3::new(
+                        (x1 as i32).max(x2 as i32),
+                        (y1 as i32).max(y2 as i32),
+                        (z1 as i32).max(z2 as i32),
+                    ),
                 );
                 let size = (max - min + IVec3::ONE).as_i64vec3();
                 let volume = size.x * size.y * size.z;
@@ -311,7 +331,9 @@ fn build_engine(outbox: SharedOutbox, snapshot: SharedSnapshot) -> Engine {
     {
         let ob = outbox.clone();
         engine.register_fn("set_time", move |t: f64| {
-            ob.lock().unwrap().push(ModOp::SetTime(t.rem_euclid(1.0) as f32));
+            ob.lock()
+                .unwrap()
+                .push(ModOp::SetTime(t.rem_euclid(1.0) as f32));
         });
     }
     {
@@ -438,7 +460,9 @@ fn load_mods(
 
         if on_load {
             if let Err(e) =
-                loaded.engine.call_fn::<()>(&mut loaded.scope, &loaded.ast, "on_load", ())
+                loaded
+                    .engine
+                    .call_fn::<()>(&mut loaded.scope, &loaded.ast, "on_load", ())
             {
                 console.push(ChatLine::system(format!(
                     "mod '{}': on_load failed: {e}",
@@ -449,7 +473,11 @@ fn load_mods(
 
         console.push(ChatLine::system(format!(
             "mod loaded: {} {}",
-            loaded.meta.name.clone().unwrap_or_else(|| loaded.meta.id.clone()),
+            loaded
+                .meta
+                .name
+                .clone()
+                .unwrap_or_else(|| loaded.meta.id.clone()),
             loaded.meta.version.clone().unwrap_or_default(),
         )));
         runtime.mods.push(loaded);
@@ -490,11 +518,8 @@ fn update_snapshot(
         for dz in -r..=r {
             for dx in -r..=r {
                 let (x, y, z) = (center.x + dx, center.y + dy, center.z + dz);
-                let chunk_pos = IVec3::new(
-                    x.div_euclid(size),
-                    y.div_euclid(size),
-                    z.div_euclid(size),
-                );
+                let chunk_pos =
+                    IVec3::new(x.div_euclid(size), y.div_euclid(size), z.div_euclid(size));
                 let id = store
                     .chunks
                     .get(&chunk_pos)
@@ -553,7 +578,10 @@ fn mod_runtime_system(
     for i in 0..runtime.mods.len() {
         if runtime.mods[i].on_tick {
             let m = &mut runtime.mods[i];
-            if let Err(e) = m.engine.call_fn::<()>(&mut m.scope, &m.ast, "on_tick", (dt,)) {
+            if let Err(e) = m
+                .engine
+                .call_fn::<()>(&mut m.scope, &m.ast, "on_tick", (dt,))
+            {
                 let id = m.meta.id.clone();
                 console.push(ChatLine::system(format!("mod '{id}' on_tick: {e}")));
             }
@@ -576,12 +604,11 @@ fn mod_runtime_system(
                     block_name.clone(),
                 );
                 if let Err(e) =
-                    m.engine.call_fn::<()>(&mut m.scope, &m.ast, "on_block_placed", args)
+                    m.engine
+                        .call_fn::<()>(&mut m.scope, &m.ast, "on_block_placed", args)
                 {
                     let id = m.meta.id.clone();
-                    console.push(ChatLine::system(format!(
-                        "mod '{id}' on_block_placed: {e}"
-                    )));
+                    console.push(ChatLine::system(format!("mod '{id}' on_block_placed: {e}")));
                 }
             }
         }
@@ -598,12 +625,11 @@ fn mod_runtime_system(
                     block_name.clone(),
                 );
                 if let Err(e) =
-                    m.engine.call_fn::<()>(&mut m.scope, &m.ast, "on_block_broken", args)
+                    m.engine
+                        .call_fn::<()>(&mut m.scope, &m.ast, "on_block_broken", args)
                 {
                     let id = m.meta.id.clone();
-                    console.push(ChatLine::system(format!(
-                        "mod '{id}' on_block_broken: {e}"
-                    )));
+                    console.push(ChatLine::system(format!("mod '{id}' on_block_broken: {e}")));
                 }
             }
         }
@@ -622,7 +648,10 @@ fn mod_runtime_system(
                     .map(|a| rhai::Dynamic::from(a.clone()))
                     .collect();
                 let call_args = (cmd.clone(), dyn_args);
-                if let Err(e) = m.engine.call_fn::<()>(&mut m.scope, &m.ast, "on_command", call_args) {
+                if let Err(e) =
+                    m.engine
+                        .call_fn::<()>(&mut m.scope, &m.ast, "on_command", call_args)
+                {
                     let id = m.meta.id.clone();
                     console.push(ChatLine::system(format!("mod '{id}' on_command: {e}")));
                 }

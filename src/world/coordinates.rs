@@ -1,5 +1,5 @@
-use bevy::prelude::*;
 use super::chunk::CHUNK_SIZE;
+use bevy::prelude::*;
 
 pub fn world_to_chunk_pos(world_pos: Vec3) -> IVec3 {
     let size = CHUNK_SIZE as i32;
@@ -100,4 +100,3 @@ mod tests {
         assert_eq!(local, UVec3::ZERO);
     }
 }
-

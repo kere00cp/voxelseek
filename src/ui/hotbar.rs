@@ -1,13 +1,13 @@
 use bevy::input::mouse::AccumulatedMouseScroll;
 use bevy::prelude::*;
 
-use crate::block::BlockType;
-use crate::block::atlas::texture_index;
-use crate::block::Face;
-use crate::inventory::inventory::{Inventory, INVENTORY_COLS, INVENTORY_SLOTS};
-use crate::inventory::item::Item;
 use super::UiAtlas;
-use super::common::{SLOT_SIZE, SLOT_GAP, BLOCK_INSET, BORDER_WIDTH, item_placeholder_color};
+use super::common::{BLOCK_INSET, BORDER_WIDTH, SLOT_GAP, SLOT_SIZE, item_placeholder_color};
+use crate::block::BlockType;
+use crate::block::Face;
+use crate::block::atlas::texture_index;
+use crate::inventory::inventory::{INVENTORY_COLS, INVENTORY_SLOTS, Inventory};
+use crate::inventory::item::Item;
 
 pub const HOTBAR_SLOTS: usize = 9;
 
@@ -214,10 +214,7 @@ pub fn hotbar_input(
 }
 
 /// Sync hotbar item types from the inventory's bottom row.
-pub fn sync_hotbar_from_inventory(
-    inventory: Res<Inventory>,
-    mut hotbar: ResMut<HotbarState>,
-) {
+pub fn sync_hotbar_from_inventory(inventory: Res<Inventory>, mut hotbar: ResMut<HotbarState>) {
     if !inventory.is_changed() {
         return;
     }
@@ -238,8 +235,24 @@ pub fn update_hotbar_visuals(
     hotbar: Res<HotbarState>,
     atlas: Res<UiAtlas>,
     mut border_q: Query<(&HotbarSlotBorder, &mut BorderColor)>,
-    mut slot_q: Query<(&HotbarSlot, &mut Node, Option<&mut ImageNode>, Option<&mut BackgroundColor>), Without<DurabilityBar>>,
-    mut dur_q: Query<(&DurabilityBar, &mut Node, &mut BackgroundColor, &mut Visibility), Without<HotbarSlot>>,
+    mut slot_q: Query<
+        (
+            &HotbarSlot,
+            &mut Node,
+            Option<&mut ImageNode>,
+            Option<&mut BackgroundColor>,
+        ),
+        Without<DurabilityBar>,
+    >,
+    mut dur_q: Query<
+        (
+            &DurabilityBar,
+            &mut Node,
+            &mut BackgroundColor,
+            &mut Visibility,
+        ),
+        Without<HotbarSlot>,
+    >,
 ) {
     if !hotbar.is_changed() {
         return;
