@@ -9,6 +9,7 @@ a sandboxed **mod interface**, a graphical **launcher**, and
 ![Rust](https://img.shields.io/badge/Rust-000000?style=flat&logo=rust&logoColor=white)
 ![Bevy](https://img.shields.io/badge/Bevy_0.18-232326?style=flat&logo=bevy&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
+[![CI](https://github.com/kere00cp/voxelseek/actions/workflows/ci.yml/badge.svg)](https://github.com/kere00cp/voxelseek/actions/workflows/ci.yml)
 
 > **NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH
 > MOJANG OR MICROSOFT.** "Minecraft" is a trademark of Mojang Synergies AB.
